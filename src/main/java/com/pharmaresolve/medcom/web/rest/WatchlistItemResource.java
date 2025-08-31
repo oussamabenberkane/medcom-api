@@ -9,6 +9,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +28,7 @@ import tech.jhipster.web.util.ResponseUtil;
  * REST controller for managing {@link com.pharmaresolve.medcom.domain.WatchlistItem}.
  */
 @RestController
-@RequestMapping("/api/watchlist-items")
+@RequestMapping("/api/pharmacies/{pharmacyId}/watchlist/items")
 public class WatchlistItemResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(WatchlistItemResource.class);
@@ -38,140 +40,132 @@ public class WatchlistItemResource {
 
     private final WatchlistItemService watchlistItemService;
 
-    private final WatchlistItemRepository watchlistItemRepository;
-
-    public WatchlistItemResource(WatchlistItemService watchlistItemService, WatchlistItemRepository watchlistItemRepository) {
+    public WatchlistItemResource(WatchlistItemService watchlistItemService) {
         this.watchlistItemService = watchlistItemService;
-        this.watchlistItemRepository = watchlistItemRepository;
     }
 
     /**
-     * {@code POST  /watchlist-items} : Create a new watchlistItem.
+     * {@code POST /pharmacies/{pharmacyId}/watchlist/items} : Add an item to the pharmacy's watchlist.
      *
-     * @param watchlistItemDTO the watchlistItemDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new watchlistItemDTO, or with status {@code 400 (Bad Request)} if the watchlistItem has already an ID.
+     * @param pharmacyId the pharmacy ID.
+     * @param watchlistItemDTO the watchlistItemDTO to add.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new watchlistItemDTO,
+     *         or with status {@code 400 (Bad Request)} if validation fails.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<WatchlistItemDTO> createWatchlistItem(@RequestBody WatchlistItemDTO watchlistItemDTO) throws URISyntaxException {
-        LOG.debug("REST request to save WatchlistItem : {}", watchlistItemDTO);
+    public ResponseEntity<WatchlistItemDTO> addItemToWatchlist(
+        @PathVariable Long pharmacyId,
+        @Valid @RequestBody WatchlistItemDTO watchlistItemDTO
+    ) throws URISyntaxException {
+        LOG.debug("REST request to add WatchlistItem to pharmacy {} : {}", pharmacyId, watchlistItemDTO);
+
         if (watchlistItemDTO.getId() != null) {
-            throw new BadRequestAlertException("A new watchlistItem cannot already have an ID", ENTITY_NAME, "idexists");
+            throw new BadRequestAlertException("A new watchlist item cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        watchlistItemDTO = watchlistItemService.save(watchlistItemDTO);
-        return ResponseEntity.created(new URI("/api/watchlist-items/" + watchlistItemDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, watchlistItemDTO.getId().toString()))
-            .body(watchlistItemDTO);
+
+        WatchlistItemDTO result = watchlistItemService.addItemToWatchlist(pharmacyId, watchlistItemDTO);
+
+        return ResponseEntity.created(new URI("/api/pharmacies/" + pharmacyId + "/watchlist/items/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
     }
 
     /**
-     * {@code PUT  /watchlist-items/:id} : Updates an existing watchlistItem.
+     * {@code PUT /pharmacies/{pharmacyId}/watchlist/items/{itemId}} : Update an item in the pharmacy's watchlist.
      *
-     * @param id the id of the watchlistItemDTO to save.
+     * @param pharmacyId the pharmacy ID.
+     * @param itemId the item ID.
      * @param watchlistItemDTO the watchlistItemDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated watchlistItemDTO,
-     * or with status {@code 400 (Bad Request)} if the watchlistItemDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the watchlistItemDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     *         or with status {@code 400 (Bad Request)} if validation fails,
+     *         or with status {@code 404 (Not Found)} if the item doesn't exist.
      */
-    @PutMapping("/{id}")
-    public ResponseEntity<WatchlistItemDTO> updateWatchlistItem(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody WatchlistItemDTO watchlistItemDTO
-    ) throws URISyntaxException {
-        LOG.debug("REST request to update WatchlistItem : {}, {}", id, watchlistItemDTO);
-        if (watchlistItemDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, watchlistItemDTO.getId())) {
+    @PutMapping("/{itemId}")
+    public ResponseEntity<WatchlistItemDTO> updateItemInWatchlist(
+        @PathVariable Long pharmacyId,
+        @PathVariable Long itemId,
+        @Valid @RequestBody WatchlistItemDTO watchlistItemDTO
+    ) {
+        LOG.debug("REST request to update WatchlistItem {} in pharmacy {} : {}", itemId, pharmacyId, watchlistItemDTO);
+
+        if (watchlistItemDTO.getId() != null && !Objects.equals(itemId, watchlistItemDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!watchlistItemRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
+        WatchlistItemDTO result = watchlistItemService.updateItemInWatchlist(pharmacyId, itemId, watchlistItemDTO);
 
-        watchlistItemDTO = watchlistItemService.update(watchlistItemDTO);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, watchlistItemDTO.getId().toString()))
-            .body(watchlistItemDTO);
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, itemId.toString()))
+            .body(result);
     }
 
     /**
-     * {@code PATCH  /watchlist-items/:id} : Partial updates given fields of an existing watchlistItem, field will ignore if it is null
+     * {@code DELETE /pharmacies/{pharmacyId}/watchlist/items/{itemId}} : Remove an item from the pharmacy's watchlist.
      *
-     * @param id the id of the watchlistItemDTO to save.
-     * @param watchlistItemDTO the watchlistItemDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated watchlistItemDTO,
-     * or with status {@code 400 (Bad Request)} if the watchlistItemDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the watchlistItemDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the watchlistItemDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     * @param pharmacyId the pharmacy ID.
+     * @param itemId the item ID.
+     * @return the {@link ResponseEntity} with status {@code 204 (No Content)},
+     *         or with status {@code 404 (Not Found)} if the item doesn't exist.
      */
-    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<WatchlistItemDTO> partialUpdateWatchlistItem(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody WatchlistItemDTO watchlistItemDTO
-    ) throws URISyntaxException {
-        LOG.debug("REST request to partial update WatchlistItem partially : {}, {}", id, watchlistItemDTO);
-        if (watchlistItemDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, watchlistItemDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
+    @DeleteMapping("/{itemId}")
+    public ResponseEntity<Void> removeItemFromWatchlist(
+        @PathVariable Long pharmacyId,
+        @PathVariable Long itemId
+    ) {
+        LOG.debug("REST request to remove WatchlistItem {} from pharmacy {}", itemId, pharmacyId);
 
-        if (!watchlistItemRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
+        watchlistItemService.removeItemFromWatchlist(pharmacyId, itemId);
 
-        Optional<WatchlistItemDTO> result = watchlistItemService.partialUpdate(watchlistItemDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, watchlistItemDTO.getId().toString())
-        );
+        return ResponseEntity.noContent()
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, itemId.toString()))
+            .build();
     }
 
     /**
-     * {@code GET  /watchlist-items} : get all the watchlistItems.
+     * {@code GET /pharmacies/{pharmacyId}/watchlist/items} : Get all items in the pharmacy's watchlist.
      *
+     * @param pharmacyId the pharmacy ID.
      * @param pageable the pagination information.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of watchlistItems in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of watchlist items in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<WatchlistItemDTO>> getAllWatchlistItems(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        LOG.debug("REST request to get a page of WatchlistItems");
-        Page<WatchlistItemDTO> page = watchlistItemService.findAll(pageable);
+    public ResponseEntity<List<WatchlistItemDTO>> getWatchlistItems(
+        @PathVariable Long pharmacyId,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
+        LOG.debug("REST request to get WatchlistItems for pharmacy {}", pharmacyId);
+
+        Page<WatchlistItemDTO> page = watchlistItemService.findItemsByWatchlist(pharmacyId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**
-     * {@code GET  /watchlist-items/:id} : get the "id" watchlistItem.
+     * {@code GET /pharmacies/{pharmacyId}/watchlist/items/{itemId}} : Get a specific item from the pharmacy's watchlist.
      *
-     * @param id the id of the watchlistItemDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the watchlistItemDTO, or with status {@code 404 (Not Found)}.
+     * @param pharmacyId the pharmacy ID.
+     * @param itemId the item ID.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the watchlistItemDTO,
+     *         or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<WatchlistItemDTO> getWatchlistItem(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get WatchlistItem : {}", id);
-        Optional<WatchlistItemDTO> watchlistItemDTO = watchlistItemService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(watchlistItemDTO);
-    }
+    @GetMapping("/{itemId}")
+    public ResponseEntity<WatchlistItemDTO> getWatchlistItem(
+        @PathVariable Long pharmacyId,
+        @PathVariable Long itemId
+    ) {
+        LOG.debug("REST request to get WatchlistItem {} from pharmacy {}", itemId, pharmacyId);
 
-    /**
-     * {@code DELETE  /watchlist-items/:id} : delete the "id" watchlistItem.
-     *
-     * @param id the id of the watchlistItemDTO to delete.
-     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
-     */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteWatchlistItem(@PathVariable("id") Long id) {
-        LOG.debug("REST request to delete WatchlistItem : {}", id);
-        watchlistItemService.delete(id);
-        return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+        // First check if the item belongs to this pharmacy's watchlist
+        Optional<WatchlistItemDTO> watchlistItemDTO = watchlistItemService.findOne(itemId);
+
+        if (watchlistItemDTO.isEmpty() ||
+            !Objects.equals(watchlistItemDTO.get().getWatchlist().getId(), pharmacyId)) {
+            throw new BadRequestAlertException(
+                "Watchlist item not found or doesn't belong to this pharmacy", ENTITY_NAME, "itemnotfound");
+        }
+
+        return ResponseUtil.wrapOrNotFound(watchlistItemDTO);
     }
 }

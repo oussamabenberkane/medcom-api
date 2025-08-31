@@ -57,7 +57,7 @@ public class PharmacyResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<PharmacyDTO> createPharmacy(@Valid @RequestBody PharmacyDTO pharmacyDTO) throws URISyntaxException {
+    public ResponseEntity<PharmacyDTO> createPharmacy(@RequestBody PharmacyDTO pharmacyDTO) throws URISyntaxException {
         LOG.debug("REST request to save Pharmacy : {}", pharmacyDTO);
         if (pharmacyDTO.getId() != null) {
             throw new BadRequestAlertException("A new pharmacy cannot already have an ID", ENTITY_NAME, "idexists");

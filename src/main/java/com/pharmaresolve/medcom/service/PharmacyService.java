@@ -7,6 +7,8 @@ import com.pharmaresolve.medcom.repository.WatchlistRepository;
 import com.pharmaresolve.medcom.service.dto.PharmacyDTO;
 import com.pharmaresolve.medcom.service.dto.WatchlistDTO;
 import com.pharmaresolve.medcom.service.mapper.PharmacyMapper;
+
+import java.time.ZonedDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -34,12 +36,12 @@ public class PharmacyService {
 
     private final PharmacyMapper pharmacyMapper;
 
-    private final WatchlistService watchlistService;
+    private final WatchlistRepository watchlistRepository;
 
-    public PharmacyService(PharmacyRepository pharmacyRepository, PharmacyMapper pharmacyMapper, WatchlistService watchlistService) {
+    public PharmacyService(PharmacyRepository pharmacyRepository, PharmacyMapper pharmacyMapper, WatchlistRepository watchlistRepository) {
         this.pharmacyRepository = pharmacyRepository;
         this.pharmacyMapper = pharmacyMapper;
-        this.watchlistService = watchlistService;
+        this.watchlistRepository = watchlistRepository;
     }
 
     /**
@@ -53,25 +55,32 @@ public class PharmacyService {
     public PharmacyDTO create(PharmacyDTO pharmacyDTO) {
         LOG.debug("Request to create Pharmacy with Watchlist : {}", pharmacyDTO);
 
-        // Validate pharmacy name is present (required for watchlist naming)
         if (pharmacyDTO.getName() == null || pharmacyDTO.getName().trim().isEmpty()) {
             throw new BadRequestAlertException("Pharmacy name is required", "pharmacy", "nameRequired");
         }
 
-        // Convert to entity and save pharmacy first
-        pharmacyDTO.setActive(true);
-        PharmacyDTO savedPharmacy = save(pharmacyDTO);
+        // Convert DTO to entity and save pharmacy first
+        Pharmacy pharmacy = pharmacyMapper.toEntity(pharmacyDTO);
+        pharmacy.setActive(true);
+        pharmacy.setCreated(ZonedDateTime.now());
+        pharmacy.setCreatedBy("admin");
 
-        // Create and save the associated watchlist
-        WatchlistDTO watchlist = new WatchlistDTO();
-        watchlist.setId(savedPharmacy.getId()); // Same ID as pharmacy due to @MapsId
+        // Save pharmacy to get the generated ID
+        Pharmacy savedPharmacy = pharmacyRepository.save(pharmacy);
+
+        // Now create watchlist with the pharmacy's ID
+        Watchlist watchlist = new Watchlist();
         watchlist.setName(savedPharmacy.getName() + " Watchlist");
         watchlist.setLimit(10);
-        watchlist.setPharmacy(savedPharmacy);
+        watchlist.setPharmacy(savedPharmacy); // This sets the ID via @MapsId
 
-        watchlistService.save(watchlist);
+        // Save watchlist
+        watchlistRepository.save(watchlist);
 
-        return savedPharmacy;
+        // Update the pharmacy's reference (optional, for consistency)
+        savedPharmacy.setWatchlist(watchlist);
+
+        return pharmacyMapper.toDto(savedPharmacy);
     }
 
     /**
