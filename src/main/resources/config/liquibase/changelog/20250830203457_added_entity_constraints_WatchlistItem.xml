@@ -8,7 +8,7 @@
     <!--
         Added the constraints for entity WatchlistItem.
     -->
-    <changeSet id="20250830203457-2" author="jhipster">
+    <changeSet id="20250830203457-2" author="oussama">
 
         <addForeignKeyConstraint baseColumnNames="watchlist_id"
                                  baseTableName="watchlist_item"

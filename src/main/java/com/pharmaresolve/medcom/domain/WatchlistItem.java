@@ -19,8 +19,8 @@ public class WatchlistItem implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "watchlist_item_sequence")
+    @SequenceGenerator(name = "watchlist_item_sequence", sequenceName = "watchlist_item_sequence", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

@@ -14,14 +14,20 @@
             <column name="id" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="date_added" type="${datetimeType}">
-                <constraints nullable="true" />
-            </column>
             <column name="priority" type="integer">
+              <constraints nullable="true"/>
+            </column>
+            <column name="date_added" type="${datetimeType}">
                 <constraints nullable="true" />
             </column>
             <column name="added_by" type="varchar(255)">
                 <constraints nullable="true" />
+            </column>
+            <column name="date_updated" type="${datetimeType}">
+              <constraints nullable="true"/>
+            </column>
+            <column name="updated_by" type="varchar(255)">
+              <constraints nullable="true"/>
             </column>
             <column name="alert_enabled" type="boolean">
                 <constraints nullable="true" />
@@ -35,17 +41,6 @@
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
         <dropDefaultValue tableName="watchlist_item" columnName="date_added" columnDataType="${datetimeType}"/>
-    </changeSet>
-
-    <changeSet id="20250906-1" author="oussama">
-      <addColumn tableName="watchlist_item">
-        <column name="date_updated" type="${datetimeType}">
-          <constraints nullable="true"/>
-        </column>
-        <column name="updated_by" type="varchar(255)">
-          <constraints nullable="true"/>
-        </column>
-      </addColumn>
     </changeSet>
 
   <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
