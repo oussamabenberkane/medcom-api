@@ -5,7 +5,10 @@ import com.pharmaresolve.medcom.repository.PharmacyRepository;
 import com.pharmaresolve.medcom.repository.WatchlistRepository;
 import com.pharmaresolve.medcom.service.dto.WatchlistDTO;
 import com.pharmaresolve.medcom.service.mapper.WatchlistMapper;
+
 import java.util.Optional;
+
+import com.pharmaresolve.medcom.web.rest.errors.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -23,16 +26,10 @@ public class WatchlistService {
     private static final Logger LOG = LoggerFactory.getLogger(WatchlistService.class);
 
     private final WatchlistRepository watchlistRepository;
-
     private final WatchlistMapper watchlistMapper;
-
     private final PharmacyRepository pharmacyRepository;
 
-    public WatchlistService(
-        WatchlistRepository watchlistRepository,
-        WatchlistMapper watchlistMapper,
-        PharmacyRepository pharmacyRepository
-    ) {
+    public WatchlistService(WatchlistRepository watchlistRepository, WatchlistMapper watchlistMapper, PharmacyRepository pharmacyRepository) {
         this.watchlistRepository = watchlistRepository;
         this.watchlistMapper = watchlistMapper;
         this.pharmacyRepository = pharmacyRepository;
@@ -40,57 +37,42 @@ public class WatchlistService {
 
     /**
      * Save a watchlist.
-     *
-     * @param watchlistDTO the entity to save.
-     * @return the persisted entity.
      */
     public WatchlistDTO save(WatchlistDTO watchlistDTO) {
         LOG.debug("Request to save Watchlist : {}", watchlistDTO);
+
         Watchlist watchlist = watchlistMapper.toEntity(watchlistDTO);
-        Long pharmacyId = watchlist.getPharmacy().getId();
-        pharmacyRepository.findById(pharmacyId).ifPresent(watchlist::pharmacy);
+        if (watchlist.getPharmacy() != null && watchlist.getPharmacy().getId() != null) {
+            Long pharmacyId = watchlist.getPharmacy().getId();
+            pharmacyRepository.findById(pharmacyId).ifPresent(watchlist::setPharmacy);
+        }
+
         watchlist = watchlistRepository.save(watchlist);
         return watchlistMapper.toDto(watchlist);
     }
 
     /**
-     * Update a watchlist.
-     *
-     * @param watchlistDTO the entity to save.
-     * @return the persisted entity.
+     * Update the watchlist of a pharmacy.
      */
-    public WatchlistDTO update(WatchlistDTO watchlistDTO) {
-        LOG.debug("Request to update Watchlist : {}", watchlistDTO);
-        Watchlist watchlist = watchlistMapper.toEntity(watchlistDTO);
-        watchlist = watchlistRepository.save(watchlist);
-        return watchlistMapper.toDto(watchlist);
+    public WatchlistDTO update(Long pharmacyId, WatchlistDTO watchlistDTO) {
+        LOG.debug("Request to update Watchlist for pharmacy : {}", pharmacyId);
+
+        WatchlistDTO existingWatchlist = findOne(pharmacyId)
+            .orElseThrow(() -> new BadRequestAlertException("Watchlist not found for pharmacy", "watchlist", "notfound"));
+
+        if (watchlistDTO.getName() != null && !watchlistDTO.getName().trim().isEmpty()) {
+            existingWatchlist.setName(watchlistDTO.getName());
+        }
+
+        if (watchlistDTO.getLimit() != null && watchlistDTO.getLimit() > 0) {
+            existingWatchlist.setLimit(watchlistDTO.getLimit());
+        }
+
+        return save(existingWatchlist);
     }
 
     /**
-     * Partially update a watchlist.
-     *
-     * @param watchlistDTO the entity to update partially.
-     * @return the persisted entity.
-     */
-    public Optional<WatchlistDTO> partialUpdate(WatchlistDTO watchlistDTO) {
-        LOG.debug("Request to partially update Watchlist : {}", watchlistDTO);
-
-        return watchlistRepository
-            .findById(watchlistDTO.getId())
-            .map(existingWatchlist -> {
-                watchlistMapper.partialUpdate(existingWatchlist, watchlistDTO);
-
-                return existingWatchlist;
-            })
-            .map(watchlistRepository::save)
-            .map(watchlistMapper::toDto);
-    }
-
-    /**
-     * Get all the watchlists.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
+     * Get all watchlists (paged).
      */
     @Transactional(readOnly = true)
     public Page<WatchlistDTO> findAll(Pageable pageable) {
@@ -99,10 +81,7 @@ public class WatchlistService {
     }
 
     /**
-     * Get one watchlist by id.
-     *
-     * @param id the id of the entity.
-     * @return the entity.
+     * Get a watchlist by ID.
      */
     @Transactional(readOnly = true)
     public Optional<WatchlistDTO> findOne(Long id) {
@@ -111,9 +90,7 @@ public class WatchlistService {
     }
 
     /**
-     * Delete the watchlist by id.
-     *
-     * @param id the id of the entity.
+     * Delete a watchlist by ID.
      */
     public void delete(Long id) {
         LOG.debug("Request to delete Watchlist : {}", id);

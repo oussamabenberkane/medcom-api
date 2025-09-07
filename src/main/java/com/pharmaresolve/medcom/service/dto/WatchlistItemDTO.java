@@ -14,15 +14,19 @@ public class WatchlistItemDTO implements Serializable {
 
     private ZonedDateTime dateAdded;
 
+    private ZonedDateTime dateUpdated;
+
     private Integer priority;
 
     private String addedBy;
 
+    private String updatedBy;
+
     private Boolean alertEnabled;
 
-    private WatchlistDTO watchlist;
+    private Long watchlistId;
 
-    private ProductDTO product;
+    private Long productId;
 
     public Long getId() {
         return id;
@@ -38,6 +42,14 @@ public class WatchlistItemDTO implements Serializable {
 
     public void setDateAdded(ZonedDateTime dateAdded) {
         this.dateAdded = dateAdded;
+    }
+
+    public ZonedDateTime getDateUpdated() {
+        return dateUpdated;
+    }
+
+    public void setDateUpdated(ZonedDateTime dateUpdated) {
+        this.dateUpdated = dateUpdated;
     }
 
     public Integer getPriority() {
@@ -56,6 +68,14 @@ public class WatchlistItemDTO implements Serializable {
         this.addedBy = addedBy;
     }
 
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+
     public Boolean getAlertEnabled() {
         return alertEnabled;
     }
@@ -64,20 +84,20 @@ public class WatchlistItemDTO implements Serializable {
         this.alertEnabled = alertEnabled;
     }
 
-    public WatchlistDTO getWatchlist() {
-        return watchlist;
+    public Long getWatchlistId() {
+        return watchlistId;
     }
 
-    public void setWatchlist(WatchlistDTO watchlist) {
-        this.watchlist = watchlist;
+    public void setWatchlistId(Long watchlistId) {
+        this.watchlistId = watchlistId;
     }
 
-    public ProductDTO getProduct() {
-        return product;
+    public Long getProductId() {
+        return productId;
     }
 
-    public void setProduct(ProductDTO product) {
-        this.product = product;
+    public void setProductId(Long productId) {
+        this.productId = productId;
     }
 
     @Override
@@ -85,11 +105,10 @@ public class WatchlistItemDTO implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof WatchlistItemDTO)) {
+        if (!(o instanceof WatchlistItemDTO watchlistItemDTO)) {
             return false;
         }
 
-        WatchlistItemDTO watchlistItemDTO = (WatchlistItemDTO) o;
         if (this.id == null) {
             return false;
         }
@@ -101,17 +120,18 @@ public class WatchlistItemDTO implements Serializable {
         return Objects.hash(this.id);
     }
 
-    // prettier-ignore
     @Override
     public String toString() {
         return "WatchlistItemDTO{" +
             "id=" + getId() +
-            ", dateAdded='" + getDateAdded() + "'" +
+            ", dateAdded=" + getDateAdded() +
+            ", dateUpdated=" + getDateUpdated() +
             ", priority=" + getPriority() +
-            ", addedBy='" + getAddedBy() + "'" +
-            ", alertEnabled='" + getAlertEnabled() + "'" +
-            ", watchlist=" + getWatchlist() +
-            ", product=" + getProduct() +
-            "}";
+            ", addedBy='" + getAddedBy() + '\'' +
+            ", updatedBy='" + getUpdatedBy() + '\'' +
+            ", alertEnabled=" + getAlertEnabled() +
+            ", watchlistId=" + getWatchlistId() +
+            ", productId=" + getProductId() +
+            '}';
     }
 }

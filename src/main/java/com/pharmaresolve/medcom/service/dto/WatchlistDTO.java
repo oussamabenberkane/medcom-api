@@ -15,7 +15,7 @@ public class WatchlistDTO implements Serializable {
 
     private Integer limit;
 
-    private PharmacyDTO pharmacy;
+    private Long pharmacyId;
 
     public Long getId() {
         return id;
@@ -41,12 +41,12 @@ public class WatchlistDTO implements Serializable {
         this.limit = limit;
     }
 
-    public PharmacyDTO getPharmacy() {
-        return pharmacy;
+    public Long getPharmacyId() {
+        return pharmacyId;
     }
 
-    public void setPharmacy(PharmacyDTO pharmacy) {
-        this.pharmacy = pharmacy;
+    public void setPharmacyId(Long pharmacyId) {
+        this.pharmacyId = pharmacyId;
     }
 
     @Override
@@ -54,11 +54,10 @@ public class WatchlistDTO implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof WatchlistDTO)) {
+        if (!(o instanceof WatchlistDTO watchlistDTO)) {
             return false;
         }
 
-        WatchlistDTO watchlistDTO = (WatchlistDTO) o;
         if (this.id == null) {
             return false;
         }
@@ -70,14 +69,13 @@ public class WatchlistDTO implements Serializable {
         return Objects.hash(this.id);
     }
 
-    // prettier-ignore
     @Override
     public String toString() {
         return "WatchlistDTO{" +
             "id=" + getId() +
-            ", name='" + getName() + "'" +
+            ", name='" + getName() + '\'' +
             ", limit=" + getLimit() +
-            ", pharmacy=" + getPharmacy() +
-            "}";
+            ", pharmacyId=" + getPharmacyId() +
+            '}';
     }
 }

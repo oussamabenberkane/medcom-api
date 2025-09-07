@@ -27,11 +27,17 @@ public class WatchlistItem implements Serializable {
     @Column(name = "date_added")
     private ZonedDateTime dateAdded;
 
+    @Column(name = "date_updated")
+    private ZonedDateTime dateUpdated;
+
     @Column(name = "priority")
     private Integer priority;
 
     @Column(name = "added_by")
     private String addedBy;
+
+    @Column(name = "updated_by")
+    private String updatedBy;
 
     @Column(name = "alert_enabled")
     private Boolean alertEnabled;
@@ -67,6 +73,14 @@ public class WatchlistItem implements Serializable {
         return this;
     }
 
+    public ZonedDateTime getDateUpdated() {
+        return dateUpdated;
+    }
+
+    public void setDateUpdated(ZonedDateTime dateUpdated) {
+        this.dateUpdated = dateUpdated;
+    }
+
     public void setDateAdded(ZonedDateTime dateAdded) {
         this.dateAdded = dateAdded;
     }
@@ -95,6 +109,14 @@ public class WatchlistItem implements Serializable {
 
     public void setAddedBy(String addedBy) {
         this.addedBy = addedBy;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
     }
 
     public Boolean getAlertEnabled() {
@@ -155,15 +177,18 @@ public class WatchlistItem implements Serializable {
         return getClass().hashCode();
     }
 
-    // prettier-ignore
     @Override
     public String toString() {
         return "WatchlistItem{" +
             "id=" + getId() +
-            ", dateAdded='" + getDateAdded() + "'" +
+            ", dateAdded=" + getDateAdded() +
+            ", dateUpdated=" + getDateUpdated() +
             ", priority=" + getPriority() +
-            ", addedBy='" + getAddedBy() + "'" +
-            ", alertEnabled='" + getAlertEnabled() + "'" +
-            "}";
+            ", addedBy='" + getAddedBy() + '\'' +
+            ", updatedBy='" + getUpdatedBy() + '\'' +
+            ", alertEnabled=" + getAlertEnabled() +
+            ", watchlist=" + getWatchlist() +
+            ", product=" + getProduct() +
+            '}';
     }
 }

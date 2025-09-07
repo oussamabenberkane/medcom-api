@@ -13,17 +13,25 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface WatchlistItemMapper extends EntityMapper<WatchlistItemDTO, WatchlistItem> {
-    @Mapping(target = "watchlist", source = "watchlist", qualifiedByName = "watchlistId")
-    @Mapping(target = "product", source = "product", qualifiedByName = "productId")
+    @Mapping(target = "watchlistId", source = "watchlist.id")
+    @Mapping(target = "productId", source = "product.id")
     WatchlistItemDTO toDto(WatchlistItem s);
 
-    @Named("watchlistId")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    WatchlistDTO toDtoWatchlistId(Watchlist watchlist);
+    @Mapping(target = "watchlist", source = "watchlistId")
+    @Mapping(target = "product", source = "productId")
+    WatchlistItem toEntity(WatchlistItemDTO dto);
 
-    @Named("productId")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    ProductDTO toDtoProductId(Product product);
+    default Watchlist fromWatchlistId(Long id) {
+        if (id == null) return null;
+        Watchlist watchlist = new Watchlist();
+        watchlist.setId(id);
+        return watchlist;
+    }
+
+    default Product fromProductId(Long id) {
+        if (id == null) return null;
+        Product product = new Product();
+        product.setId(id);
+        return product;
+    }
 }

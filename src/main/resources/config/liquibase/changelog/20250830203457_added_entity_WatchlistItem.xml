@@ -37,7 +37,18 @@
         <dropDefaultValue tableName="watchlist_item" columnName="date_added" columnDataType="${datetimeType}"/>
     </changeSet>
 
-    <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
+    <changeSet id="20250906-1" author="oussama">
+      <addColumn tableName="watchlist_item">
+        <column name="date_updated" type="${datetimeType}">
+          <constraints nullable="true"/>
+        </column>
+        <column name="updated_by" type="varchar(255)">
+          <constraints nullable="true"/>
+        </column>
+      </addColumn>
+    </changeSet>
+
+  <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
 
     <!--
         Load sample data generated with Faker.js

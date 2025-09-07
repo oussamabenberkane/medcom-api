@@ -9,7 +9,6 @@ import com.pharmaresolve.medcom.service.mapper.WatchlistItemMapper;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import com.pharmaresolve.medcom.service.mapper.WatchlistMapper;
 import com.pharmaresolve.medcom.web.rest.errors.BadRequestAlertException;
 import com.pharmaresolve.medcom.web.rest.errors.ErrorConstants;
 import org.slf4j.Logger;
@@ -30,25 +29,19 @@ public class WatchlistItemService {
 
     private final WatchlistItemRepository watchlistItemRepository;
     private final WatchlistItemMapper watchlistItemMapper;
-    private final WatchlistMapper watchlistMapper;
     private final WatchlistService watchlistService;
+    private final ProductService productService;
 
-    public WatchlistItemService(
-        WatchlistItemRepository watchlistItemRepository,
-        WatchlistItemMapper watchlistItemMapper, WatchlistMapper watchlistMapper,
-        WatchlistService watchlistService
-    ) {
+    public WatchlistItemService(WatchlistItemRepository watchlistItemRepository, WatchlistItemMapper watchlistItemMapper,
+                                WatchlistService watchlistService, ProductService productService) {
         this.watchlistItemRepository = watchlistItemRepository;
         this.watchlistItemMapper = watchlistItemMapper;
-        this.watchlistMapper = watchlistMapper;
         this.watchlistService = watchlistService;
+        this.productService = productService;
     }
 
     /**
-     * Save a watchlistItem.
-     *
-     * @param watchlistItemDTO the entity to save.
-     * @return the persisted entity.
+     * Save a watchlist item.
      */
     public WatchlistItemDTO save(WatchlistItemDTO watchlistItemDTO) {
         LOG.debug("Request to save WatchlistItem : {}", watchlistItemDTO);
@@ -59,40 +52,31 @@ public class WatchlistItemService {
 
     /**
      * Add an item to a pharmacy's watchlist.
-     *
-     * @param pharmacyId the pharmacy ID.
-     * @param watchlistItemDTO the watchlist item to add.
-     * @return the persisted watchlist item.
-     * @throws BadRequestAlertException if watchlist doesn't exist, limit exceeded, or product already exists.
      */
     public WatchlistItemDTO addItemToWatchlist(Long pharmacyId, WatchlistItemDTO watchlistItemDTO) {
         LOG.debug("Request to add WatchlistItem to pharmacy {} watchlist : {}", pharmacyId, watchlistItemDTO);
 
-        // Validate watchlist exists
         WatchlistDTO watchlist = watchlistService.findOne(pharmacyId)
-            .orElseThrow(() -> new BadRequestAlertException(
-                "Watchlist not found for pharmacy", "watchlist", "watchlistnotfound"));
+            .orElseThrow(() -> new BadRequestAlertException("Watchlist not found for pharmacy", "watchlist", "watchlistnotfound"));
 
-        // Check if product already exists in this watchlist
-        if (watchlistItemDTO.getProduct() != null && watchlistItemDTO.getProduct().getId() != null) {
-            boolean productExists = watchlistItemRepository
-                .existsByWatchlistIdAndProductId(pharmacyId, watchlistItemDTO.getProduct().getId());
-            if (productExists) {
-                throw new BadRequestAlertException(
-                    "Product already exists in this watchlist", "watchlistItem", "productduplicate");
+        if (watchlistItemDTO.getProductId() != null) {
+            productService.findOne(watchlistItemDTO.getProductId())
+                .orElseThrow(() -> new BadRequestAlertException("Product not found", "product", "productnotfound"));
+
+            if (watchlistItemRepository.existsByWatchlistIdAndProductId(pharmacyId, watchlistItemDTO.getProductId())) {
+                throw new BadRequestAlertException("Product already exists in this watchlist", "watchlistItem", "productduplicate");
             }
         }
 
-        // Check watchlist limit
         long currentItemCount = watchlistItemRepository.countByWatchlistId(pharmacyId);
         if (currentItemCount >= watchlist.getLimit()) {
-            throw new BadRequestAlertException(
-                "Watchlist limit exceeded", "watchlistItem", ErrorConstants.WATCHLIST_LIMIT_EXCEEDED);
+            throw new BadRequestAlertException("Watchlist limit exceeded", "watchlistItem", ErrorConstants.WATCHLIST_LIMIT_EXCEEDED);
         }
 
-        // Set default values
-        watchlistItemDTO.setWatchlist(watchlist);
+        // Set default values and associations
+        watchlistItemDTO.setWatchlistId(watchlist.getId());
         watchlistItemDTO.setDateAdded(ZonedDateTime.now());
+        watchlistItemDTO.setAddedBy("Admin");
         watchlistItemDTO.setAlertEnabled(true);
         if (watchlistItemDTO.getPriority() == null) {
             watchlistItemDTO.setPriority(1);
@@ -103,71 +87,56 @@ public class WatchlistItemService {
 
     /**
      * Update an item in a pharmacy's watchlist.
-     *
-     * @param pharmacyId the pharmacy ID.
-     * @param itemId the watchlist item ID.
-     * @param watchlistItemDTO the updated watchlist item.
-     * @return the updated watchlist item.
-     * @throws BadRequestAlertException if item doesn't exist or doesn't belong to the pharmacy's watchlist.
      */
     public WatchlistItemDTO updateItemInWatchlist(Long pharmacyId, Long itemId, WatchlistItemDTO watchlistItemDTO) {
         LOG.debug("Request to update WatchlistItem {} in pharmacy {} watchlist : {}", itemId, pharmacyId, watchlistItemDTO);
 
-        // Validate item exists and belongs to the pharmacy's watchlist
-        WatchlistItem existingItem = watchlistItemRepository.findByIdAndWatchlistId(itemId, pharmacyId)
-            .orElseThrow(() -> new BadRequestAlertException(
-                "Watchlist item not found or doesn't belong to this pharmacy", "watchlistItem", "itemnotfound"));
+        WatchlistItemDTO existingItem = findItemByIdAndPharmacy(itemId, pharmacyId)
+            .orElseThrow(() -> new BadRequestAlertException("Watchlist item not found or doesn't belong to this pharmacy", "watchlistItem", "itemnotfound"));
 
-        // Preserve immutable fields
-        watchlistItemDTO.setId(itemId);
-        watchlistItemDTO.setDateAdded(existingItem.getDateAdded());
-        watchlistItemDTO.setAddedBy(existingItem.getAddedBy());
-        watchlistItemDTO.setPriority(existingItem.getPriority());
-        watchlistItemDTO.setWatchlist(watchlistMapper.toDto(existingItem.getWatchlist()));
-        watchlistItemDTO.setProduct(watchlistItemMapper.toDto(existingItem).getProduct());
+        // Set audit fields for update
+        existingItem.setPriority(watchlistItemDTO.getPriority());
+        existingItem.setAlertEnabled(watchlistItemDTO.getAlertEnabled());
+        existingItem.setDateUpdated(ZonedDateTime.now());
+        existingItem.setUpdatedBy("Admin");
 
-        return save(watchlistItemDTO);
+        return save(existingItem);
     }
 
     /**
      * Remove an item from a pharmacy's watchlist.
-     *
-     * @param pharmacyId the pharmacy ID.
-     * @param itemId the watchlist item ID.
-     * @throws BadRequestAlertException if item doesn't exist or doesn't belong to the pharmacy's watchlist.
      */
     public void removeItemFromWatchlist(Long pharmacyId, Long itemId) {
         LOG.debug("Request to remove WatchlistItem {} from pharmacy {} watchlist", itemId, pharmacyId);
 
-        // Validate item exists and belongs to the pharmacy's watchlist
-        boolean exists = watchlistItemRepository.findByIdAndWatchlistId(itemId, pharmacyId).isPresent();
+        boolean exists = findItemByIdAndPharmacy(itemId, pharmacyId).isPresent();
         if (!exists) {
-            throw new BadRequestAlertException(
-                "Watchlist item not found or doesn't belong to this pharmacy", "watchlistItem", "itemnotfound");
+            throw new BadRequestAlertException("Watchlist item not found or doesn't belong to this pharmacy", "watchlistItem", "itemnotfound");
         }
 
         watchlistItemRepository.deleteById(itemId);
     }
 
     /**
-     * Get all items in a pharmacy's watchlist.
-     *
-     * @param pharmacyId the pharmacy ID.
-     * @param pageable the pagination information.
-     * @return the list of watchlist items.
+     * Get all watchlist items for a pharmacy (paged).
      */
     @Transactional(readOnly = true)
     public Page<WatchlistItemDTO> findItemsByWatchlist(Long pharmacyId, Pageable pageable) {
         LOG.debug("Request to get all WatchlistItems for pharmacy {}", pharmacyId);
-        return watchlistItemRepository.findByWatchlistId(pharmacyId, pageable)
-            .map(watchlistItemMapper::toDto);
+        return watchlistItemRepository.findByWatchlistId(pharmacyId, pageable).map(watchlistItemMapper::toDto);
     }
 
     /**
-     * Get all the watchlistItems.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
+     * Get a watchlist item by ID for a pharmacy.
+     */
+    @Transactional(readOnly = true)
+    public Optional<WatchlistItemDTO> findItemByIdAndPharmacy(Long pharmacyId, Long itemId) {
+        LOG.debug("Request to get WatchlistItem {} for pharmacy {}", itemId, pharmacyId);
+        return watchlistItemRepository.findByIdAndWatchlistId(itemId, pharmacyId).map(watchlistItemMapper::toDto);
+    }
+
+    /**
+     * Get all watchlist items (paged).
      */
     @Transactional(readOnly = true)
     public Page<WatchlistItemDTO> findAll(Pageable pageable) {
@@ -176,10 +145,7 @@ public class WatchlistItemService {
     }
 
     /**
-     * Get one watchlistItem by id.
-     *
-     * @param id the id of the entity.
-     * @return the entity.
+     * Get a watchlist item by ID.
      */
     @Transactional(readOnly = true)
     public Optional<WatchlistItemDTO> findOne(Long id) {
@@ -188,9 +154,7 @@ public class WatchlistItemService {
     }
 
     /**
-     * Delete the watchlistItem by id.
-     *
-     * @param id the id of the entity.
+     * Delete a watchlist item by ID.
      */
     public void delete(Long id) {
         LOG.debug("Request to delete WatchlistItem : {}", id);

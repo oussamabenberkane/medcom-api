@@ -11,11 +11,16 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface WatchlistMapper extends EntityMapper<WatchlistDTO, Watchlist> {
-    @Mapping(target = "pharmacy", source = "pharmacy", qualifiedByName = "pharmacyId")
+    @Mapping(target = "pharmacyId", source = "pharmacy.id")
     WatchlistDTO toDto(Watchlist s);
 
-    @Named("pharmacyId")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    PharmacyDTO toDtoPharmacyId(Pharmacy pharmacy);
+    @Mapping(target = "pharmacy", source = "pharmacyId")
+    Watchlist toEntity(WatchlistDTO dto);
+
+    default Pharmacy fromId(Long id) {
+        if (id == null) return null;
+        Pharmacy pharmacy = new Pharmacy();
+        pharmacy.setId(id);
+        return pharmacy;
+    }
 }
