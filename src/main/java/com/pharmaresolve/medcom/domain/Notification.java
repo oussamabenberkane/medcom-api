@@ -38,6 +38,9 @@ public class Notification implements Serializable {
     @Column(name = "delivered_at")
     private ZonedDateTime deliveredAt;
 
+    @Column(name = "mailjet_message_id")
+    private String mailjetMessageId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "watchlistItem" }, allowSetters = true)
     private Alert alert;
@@ -109,6 +112,19 @@ public class Notification implements Serializable {
         this.deliveredAt = deliveredAt;
     }
 
+    public String getMailjetMessageId() {
+        return this.mailjetMessageId;
+    }
+
+    public Notification mailjetMessageId(String mailjetMessageId) {
+        this.setMailjetMessageId(mailjetMessageId);
+        return this;
+    }
+
+    public void setMailjetMessageId(String mailjetMessageId) {
+        this.mailjetMessageId = mailjetMessageId;
+    }
+
     public Alert getAlert() {
         return this.alert;
     }
@@ -150,6 +166,7 @@ public class Notification implements Serializable {
             ", content='" + getContent() + "'" +
             ", sentAt='" + getSentAt() + "'" +
             ", deliveredAt='" + getDeliveredAt() + "'" +
+            ", mailjetMessageId='" + getMailjetMessageId() + "'" +
             "}";
     }
 }

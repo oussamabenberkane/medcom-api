@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20250927132213-1" author="claude">
+        <addColumn tableName="jhi_user">
+            <column name="pharmacy_id" type="bigint">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20250927132213-2" author="claude">
+        <addForeignKeyConstraint baseColumnNames="pharmacy_id"
+                                 baseTableName="jhi_user"
+                                 constraintName="fk_user_pharmacy_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="pharmacy"/>
+    </changeSet>
+
+    <changeSet id="20250927132213-3" author="claude">
+        <addColumn tableName="alert">
+            <column name="mailjet_message_id" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20250927132213-4" author="claude">
+        <addColumn tableName="notification">
+            <column name="mailjet_message_id" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20250927132213-5" author="claude">
+        <createIndex indexName="idx_alert_mailjet_message_id" tableName="alert">
+            <column name="mailjet_message_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="20250927132213-6" author="claude">
+        <createIndex indexName="idx_notification_mailjet_message_id" tableName="notification">
+            <column name="mailjet_message_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

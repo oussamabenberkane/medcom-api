@@ -41,6 +41,9 @@ public class Alert implements Serializable {
     @Column(name = "resolved_at")
     private ZonedDateTime resolvedAt;
 
+    @Column(name = "mailjet_message_id")
+    private String mailjetMessageId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "watchlist", "product" }, allowSetters = true)
     private WatchlistItem watchlistItem;
@@ -125,6 +128,19 @@ public class Alert implements Serializable {
         this.resolvedAt = resolvedAt;
     }
 
+    public String getMailjetMessageId() {
+        return this.mailjetMessageId;
+    }
+
+    public Alert mailjetMessageId(String mailjetMessageId) {
+        this.setMailjetMessageId(mailjetMessageId);
+        return this;
+    }
+
+    public void setMailjetMessageId(String mailjetMessageId) {
+        this.mailjetMessageId = mailjetMessageId;
+    }
+
     public WatchlistItem getWatchlistItem() {
         return this.watchlistItem;
     }
@@ -167,6 +183,7 @@ public class Alert implements Serializable {
             ", created='" + getCreated() + "'" +
             ", sentAt='" + getSentAt() + "'" +
             ", resolvedAt='" + getResolvedAt() + "'" +
+            ", mailjetMessageId='" + getMailjetMessageId() + "'" +
             "}";
     }
 }
