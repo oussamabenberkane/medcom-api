@@ -21,6 +21,8 @@ public class NotificationDTO implements Serializable {
 
     private ZonedDateTime deliveredAt;
 
+    private String mailjetMessageId;
+
     private AlertDTO alert;
 
     public Long getId() {
@@ -63,6 +65,14 @@ public class NotificationDTO implements Serializable {
         this.deliveredAt = deliveredAt;
     }
 
+    public String getMailjetMessageId() {
+        return mailjetMessageId;
+    }
+
+    public void setMailjetMessageId(String mailjetMessageId) {
+        this.mailjetMessageId = mailjetMessageId;
+    }
+
     public AlertDTO getAlert() {
         return alert;
     }
@@ -101,6 +111,7 @@ public class NotificationDTO implements Serializable {
             ", content='" + getContent() + "'" +
             ", sentAt='" + getSentAt() + "'" +
             ", deliveredAt='" + getDeliveredAt() + "'" +
+            ", mailjetMessageId='" + getMailjetMessageId() + "'" +
             ", alert=" + getAlert() +
             "}";
     }

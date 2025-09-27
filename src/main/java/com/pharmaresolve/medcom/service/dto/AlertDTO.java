@@ -23,6 +23,8 @@ public class AlertDTO implements Serializable {
 
     private ZonedDateTime resolvedAt;
 
+    private String mailjetMessageId;
+
     private WatchlistItemDTO watchlistItem;
 
     public Long getId() {
@@ -73,6 +75,14 @@ public class AlertDTO implements Serializable {
         this.resolvedAt = resolvedAt;
     }
 
+    public String getMailjetMessageId() {
+        return mailjetMessageId;
+    }
+
+    public void setMailjetMessageId(String mailjetMessageId) {
+        this.mailjetMessageId = mailjetMessageId;
+    }
+
     public WatchlistItemDTO getWatchlistItem() {
         return watchlistItem;
     }
@@ -112,6 +122,7 @@ public class AlertDTO implements Serializable {
             ", created='" + getCreated() + "'" +
             ", sentAt='" + getSentAt() + "'" +
             ", resolvedAt='" + getResolvedAt() + "'" +
+            ", mailjetMessageId='" + getMailjetMessageId() + "'" +
             ", watchlistItem=" + getWatchlistItem() +
             "}";
     }
