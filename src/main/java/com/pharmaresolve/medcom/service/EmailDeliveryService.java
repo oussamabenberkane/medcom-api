@@ -156,20 +156,19 @@ public class EmailDeliveryService {
     public void updateDeliveryStatus(String mailjetMessageId, boolean delivered) {
         LOG.debug("Updating delivery status for message: {}, delivered: {}", mailjetMessageId, delivered);
 
-        notificationRepository.findByMailjetMessageId(mailjetMessageId)
-            .ifPresentOrElse(
-                notification -> {
-                    if (delivered) {
-                        notification.setStatus(NotificationStatus.DELIVERED);
-                        notification.setDeliveredAt(ZonedDateTime.now());
-                    } else {
-                        notification.setStatus(NotificationStatus.FAILED);
-                        notification.setErrorMessage("Email delivery failed");
-                    }
-                    notificationRepository.save(notification);
-                    LOG.debug("Updated notification {} status to: {}", notification.getId(), notification.getStatus());
-                },
-                () -> LOG.warn("No notification found for MailJet message ID: {}", mailjetMessageId)
-            );
+        Notification notification = notificationRepository.findByMailjetMessageId(mailjetMessageId);
+        if (notification != null) {
+            if (delivered) {
+                notification.setStatus(NotificationStatus.DELIVERED);
+                notification.setDeliveredAt(ZonedDateTime.now());
+            } else {
+                notification.setStatus(NotificationStatus.FAILED);
+                notification.setErrorMessage("Email delivery failed");
+            }
+            notificationRepository.save(notification);
+            LOG.debug("Updated notification {} status to: {}", notification.getId(), notification.getStatus());
+        } else {
+            LOG.warn("No notification found for MailJet message ID: {}", mailjetMessageId);
+        }
     }
 }

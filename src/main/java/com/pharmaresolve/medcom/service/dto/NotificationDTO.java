@@ -1,6 +1,7 @@
 package com.pharmaresolve.medcom.service.dto;
 
 import com.pharmaresolve.medcom.domain.enumeration.NotificationType;
+import com.pharmaresolve.medcom.domain.enumeration.NotificationStatus;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Objects;
@@ -22,6 +23,14 @@ public class NotificationDTO implements Serializable {
     private ZonedDateTime deliveredAt;
 
     private String mailjetMessageId;
+
+    private NotificationStatus status;
+
+    private String errorMessage;
+
+    private String recipientEmail;
+
+    private String recipientName;
 
     private AlertDTO alert;
 
@@ -73,6 +82,38 @@ public class NotificationDTO implements Serializable {
         this.mailjetMessageId = mailjetMessageId;
     }
 
+    public NotificationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(NotificationStatus status) {
+        this.status = status;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    public String getRecipientEmail() {
+        return recipientEmail;
+    }
+
+    public void setRecipientEmail(String recipientEmail) {
+        this.recipientEmail = recipientEmail;
+    }
+
+    public String getRecipientName() {
+        return recipientName;
+    }
+
+    public void setRecipientName(String recipientName) {
+        this.recipientName = recipientName;
+    }
+
     public AlertDTO getAlert() {
         return alert;
     }
@@ -112,6 +153,10 @@ public class NotificationDTO implements Serializable {
             ", sentAt='" + getSentAt() + "'" +
             ", deliveredAt='" + getDeliveredAt() + "'" +
             ", mailjetMessageId='" + getMailjetMessageId() + "'" +
+            ", status='" + getStatus() + "'" +
+            ", errorMessage='" + getErrorMessage() + "'" +
+            ", recipientEmail='" + getRecipientEmail() + "'" +
+            ", recipientName='" + getRecipientName() + "'" +
             ", alert=" + getAlert() +
             "}";
     }
