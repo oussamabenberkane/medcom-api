@@ -97,6 +97,18 @@ public class AlertService {
     }
 
     /**
+     * Get alert entity by id.
+     *
+     * @param id the id of the entity.
+     * @return the entity.
+     */
+    @Transactional(readOnly = true)
+    public Optional<Alert> findByAlertId(Long id) {
+        LOG.debug("Request to get Alert entity : {}", id);
+        return alertRepository.findById(id);
+    }
+
+    /**
      * Delete the alert by id.
      *
      * @param id the id of the entity.

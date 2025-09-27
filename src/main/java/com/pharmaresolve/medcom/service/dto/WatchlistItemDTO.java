@@ -1,5 +1,7 @@
 package com.pharmaresolve.medcom.service.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Objects;
@@ -16,6 +18,8 @@ public class WatchlistItemDTO implements Serializable {
 
     private ZonedDateTime dateUpdated;
 
+    @Min(value = 1, message = "Priority must be at least 1")
+    @Max(value = 3, message = "Priority must be at most 3")
     private Integer priority;
 
     private String addedBy;
@@ -23,6 +27,10 @@ public class WatchlistItemDTO implements Serializable {
     private String updatedBy;
 
     private Boolean alertEnabled;
+
+    private Boolean lastAvailabilityStatus;
+
+    private ZonedDateTime lastAvailabilityCheck;
 
     private Long watchlistId;
 
@@ -84,6 +92,22 @@ public class WatchlistItemDTO implements Serializable {
         this.alertEnabled = alertEnabled;
     }
 
+    public Boolean getLastAvailabilityStatus() {
+        return lastAvailabilityStatus;
+    }
+
+    public void setLastAvailabilityStatus(Boolean lastAvailabilityStatus) {
+        this.lastAvailabilityStatus = lastAvailabilityStatus;
+    }
+
+    public ZonedDateTime getLastAvailabilityCheck() {
+        return lastAvailabilityCheck;
+    }
+
+    public void setLastAvailabilityCheck(ZonedDateTime lastAvailabilityCheck) {
+        this.lastAvailabilityCheck = lastAvailabilityCheck;
+    }
+
     public Long getWatchlistId() {
         return watchlistId;
     }
@@ -130,6 +154,8 @@ public class WatchlistItemDTO implements Serializable {
             ", addedBy='" + getAddedBy() + '\'' +
             ", updatedBy='" + getUpdatedBy() + '\'' +
             ", alertEnabled=" + getAlertEnabled() +
+            ", lastAvailabilityStatus=" + getLastAvailabilityStatus() +
+            ", lastAvailabilityCheck=" + getLastAvailabilityCheck() +
             ", watchlistId=" + getWatchlistId() +
             ", productId=" + getProductId() +
             '}';

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -24,4 +25,10 @@ public interface WatchlistItemRepository extends JpaRepository<WatchlistItem, Lo
     Optional<WatchlistItem> findByIdAndWatchlistId(Long itemId, Long watchlistId);
 
     Page<WatchlistItem> findByWatchlistId(Long watchlistId, Pageable pageable);
+
+    List<WatchlistItem> findByAlertEnabledTrueAndPriorityAndWatchlistPharmacyActiveTrue(Integer priority);
+
+    long countByAlertEnabledTrueAndWatchlistPharmacyActiveTrue();
+
+    long countByAlertEnabledTrueAndPriorityAndWatchlistPharmacyActiveTrue(Integer priority);
 }

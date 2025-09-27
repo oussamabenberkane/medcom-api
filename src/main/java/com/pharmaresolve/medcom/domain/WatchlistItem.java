@@ -42,6 +42,12 @@ public class WatchlistItem implements Serializable {
     @Column(name = "alert_enabled")
     private Boolean alertEnabled;
 
+    @Column(name = "last_availability_status")
+    private Boolean lastAvailabilityStatus;
+
+    @Column(name = "last_availability_check")
+    private ZonedDateTime lastAvailabilityCheck;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "pharmacy" }, allowSetters = true)
     private Watchlist watchlist;
@@ -132,6 +138,32 @@ public class WatchlistItem implements Serializable {
         this.alertEnabled = alertEnabled;
     }
 
+    public Boolean getLastAvailabilityStatus() {
+        return this.lastAvailabilityStatus;
+    }
+
+    public WatchlistItem lastAvailabilityStatus(Boolean lastAvailabilityStatus) {
+        this.setLastAvailabilityStatus(lastAvailabilityStatus);
+        return this;
+    }
+
+    public void setLastAvailabilityStatus(Boolean lastAvailabilityStatus) {
+        this.lastAvailabilityStatus = lastAvailabilityStatus;
+    }
+
+    public ZonedDateTime getLastAvailabilityCheck() {
+        return this.lastAvailabilityCheck;
+    }
+
+    public WatchlistItem lastAvailabilityCheck(ZonedDateTime lastAvailabilityCheck) {
+        this.setLastAvailabilityCheck(lastAvailabilityCheck);
+        return this;
+    }
+
+    public void setLastAvailabilityCheck(ZonedDateTime lastAvailabilityCheck) {
+        this.lastAvailabilityCheck = lastAvailabilityCheck;
+    }
+
     public Watchlist getWatchlist() {
         return this.watchlist;
     }
@@ -187,6 +219,8 @@ public class WatchlistItem implements Serializable {
             ", addedBy='" + getAddedBy() + '\'' +
             ", updatedBy='" + getUpdatedBy() + '\'' +
             ", alertEnabled=" + getAlertEnabled() +
+            ", lastAvailabilityStatus=" + getLastAvailabilityStatus() +
+            ", lastAvailabilityCheck=" + getLastAvailabilityCheck() +
             ", watchlist=" + getWatchlist() +
             ", product=" + getProduct() +
             '}';

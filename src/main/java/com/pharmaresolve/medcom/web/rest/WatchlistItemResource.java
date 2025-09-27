@@ -3,6 +3,7 @@ package com.pharmaresolve.medcom.web.rest;
 import com.pharmaresolve.medcom.service.WatchlistItemService;
 import com.pharmaresolve.medcom.service.dto.WatchlistItemDTO;
 import com.pharmaresolve.medcom.web.rest.errors.BadRequestAlertException;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -46,11 +47,16 @@ public class WatchlistItemResource {
      * Add a new item to a pharmacy's watchlist.
      */
     @PostMapping("")
-    public ResponseEntity<WatchlistItemDTO> addItemToWatchlist(@PathVariable Long pharmacyId, @RequestBody WatchlistItemDTO watchlistItemDTO) throws URISyntaxException {
+    public ResponseEntity<WatchlistItemDTO> addItemToWatchlist(@PathVariable Long pharmacyId, @Valid @RequestBody WatchlistItemDTO watchlistItemDTO) throws URISyntaxException {
         LOG.debug("REST request to add WatchlistItem to pharmacy {} : {}", pharmacyId, watchlistItemDTO);
 
         if (watchlistItemDTO.getId() != null) {
             throw new BadRequestAlertException("A new watchlist item cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+
+        // Validate priority
+        if (watchlistItemDTO.getPriority() != null && (watchlistItemDTO.getPriority() < 1 || watchlistItemDTO.getPriority() > 3)) {
+            throw new BadRequestAlertException("Priority must be between 1 and 3", ENTITY_NAME, "invalidpriority");
         }
 
         WatchlistItemDTO createdItem = watchlistItemService.addItemToWatchlist(pharmacyId, watchlistItemDTO);
@@ -65,11 +71,16 @@ public class WatchlistItemResource {
      * Update an existing watchlist item.
      */
     @PutMapping("/{itemId}")
-    public ResponseEntity<WatchlistItemDTO> updateItemInWatchlist(@PathVariable Long pharmacyId, @PathVariable Long itemId, @RequestBody WatchlistItemDTO watchlistItemDTO) {
+    public ResponseEntity<WatchlistItemDTO> updateItemInWatchlist(@PathVariable Long pharmacyId, @PathVariable Long itemId, @Valid @RequestBody WatchlistItemDTO watchlistItemDTO) {
         LOG.debug("REST request to update WatchlistItem {} in pharmacy {} : {}", itemId, pharmacyId, watchlistItemDTO);
 
         if (watchlistItemDTO.getId() != null && !Objects.equals(itemId, watchlistItemDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
+        }
+
+        // Validate priority
+        if (watchlistItemDTO.getPriority() != null && (watchlistItemDTO.getPriority() < 1 || watchlistItemDTO.getPriority() > 3)) {
+            throw new BadRequestAlertException("Priority must be between 1 and 3", ENTITY_NAME, "invalidpriority");
         }
 
         WatchlistItemDTO updatedItem = watchlistItemService.updateItemInWatchlist(pharmacyId, itemId, watchlistItemDTO);
