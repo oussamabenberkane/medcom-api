@@ -203,10 +203,7 @@ jhipster:
   #   allow-credentials: true
   #   max-age: 1800
   mail:
-    from: noreply@pharmaresolve.com
-    mailjet:
-      api-key: 882157472f08d8fdffb37ab6e23d137c
-      secret-key: 8ee0c5a33b00d9cf11f7ee6f88aee644
+    from: oussamabenberkane.pro@gmail.com
   api-docs:
     default-include-pattern: /api/**
     management-include-pattern: /management/**
