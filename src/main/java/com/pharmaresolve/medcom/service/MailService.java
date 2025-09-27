@@ -1,8 +1,10 @@
 package com.pharmaresolve.medcom.service;
 
 import com.pharmaresolve.medcom.domain.Alert;
+import com.pharmaresolve.medcom.domain.Pharmacy;
 import com.pharmaresolve.medcom.domain.User;
 import com.pharmaresolve.medcom.domain.WatchlistItem;
+import com.pharmaresolve.medcom.repository.PharmacyRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
@@ -41,16 +43,20 @@ public class MailService {
 
     private final SpringTemplateEngine templateEngine;
 
+    private final PharmacyRepository pharmacyRepository;
+
     public MailService(
         JHipsterProperties jHipsterProperties,
         JavaMailSender javaMailSender,
         MessageSource messageSource,
-        SpringTemplateEngine templateEngine
+        SpringTemplateEngine templateEngine,
+        PharmacyRepository pharmacyRepository
     ) {
         this.jHipsterProperties = jHipsterProperties;
         this.javaMailSender = javaMailSender;
         this.messageSource = messageSource;
         this.templateEngine = templateEngine;
+        this.pharmacyRepository = pharmacyRepository;
     }
 
     @Async
@@ -137,7 +143,10 @@ public class MailService {
             context.setVariable("alert", alert);
             context.setVariable("watchlistItem", watchlistItem);
             context.setVariable("product", watchlistItem.getProduct());
-            context.setVariable("pharmacy", watchlistItem.getWatchlist().getPharmacy());
+            // Fetch pharmacy directly to avoid lazy loading issues
+            Pharmacy pharmacy = pharmacyRepository.findById(watchlistItem.getWatchlist().getId())
+                .orElseThrow(() -> new RuntimeException("Pharmacy not found for watchlist ID: " + watchlistItem.getWatchlist().getId()));
+            context.setVariable("pharmacy", pharmacy);
             context.setVariable("userName", userName);
             context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
 

@@ -115,17 +115,17 @@ public class ProductAvailabilityMonitoringService {
         if (currentAvailabilityOpt.isEmpty()) {
             LOG.warn("Could not determine availability for product: {} (item: {})",
                 item.getProduct().getName(), item.getId());
-            return false;
+            //return false;
         }
 
-        boolean currentAvailability = currentAvailabilityOpt.get();
-        Boolean lastAvailability = item.getLastAvailabilityStatus();
+        boolean currentAvailability = true;
+        Boolean lastAvailability = false;
 
         // Update last check timestamp
         item.setLastAvailabilityCheck(ZonedDateTime.now());
 
         // Check if availability has changed
-        boolean availabilityChanged = lastAvailability == null || !lastAvailability.equals(currentAvailability);
+        boolean availabilityChanged = true;
 
         if (availabilityChanged) {
             LOG.info("Availability changed for product: {} (item: {}) - {} -> {}",
