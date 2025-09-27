@@ -1,9 +1,15 @@
 package com.pharmaresolve.medcom.service;
 
+import com.pharmaresolve.medcom.domain.Alert;
 import com.pharmaresolve.medcom.domain.Notification;
+import com.pharmaresolve.medcom.domain.User;
+import com.pharmaresolve.medcom.domain.enumeration.NotificationType;
 import com.pharmaresolve.medcom.repository.NotificationRepository;
+import com.pharmaresolve.medcom.repository.UserRepository;
 import com.pharmaresolve.medcom.service.dto.NotificationDTO;
 import com.pharmaresolve.medcom.service.mapper.NotificationMapper;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +31,12 @@ public class NotificationService {
 
     private final NotificationMapper notificationMapper;
 
-    public NotificationService(NotificationRepository notificationRepository, NotificationMapper notificationMapper) {
+    private final UserRepository userRepository;
+
+    public NotificationService(NotificationRepository notificationRepository, NotificationMapper notificationMapper, UserRepository userRepository) {
         this.notificationRepository = notificationRepository;
         this.notificationMapper = notificationMapper;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -88,5 +97,43 @@ public class NotificationService {
     public void delete(Long id) {
         LOG.debug("Request to delete Notification : {}", id);
         notificationRepository.deleteById(id);
+    }
+
+    /**
+     * Create email notifications for all pharmacy users when an alert is created.
+     *
+     * @param alert the alert for which to create notifications.
+     * @return the list of created notifications.
+     */
+    public List<NotificationDTO> createEmailNotificationsForAlert(Alert alert) {
+        LOG.debug("Request to create email notifications for Alert : {}", alert.getId());
+
+        Long pharmacyId = alert.getWatchlistItem().getWatchlist().getPharmacy().getId();
+        List<String> pharmacyUserRoles = List.of("PHARMACY_USER");
+        List<User> pharmacyUsers = userRepository.findByPharmacyIdAndActivatedIsTrueAndAuthorities_NameIn(pharmacyId, pharmacyUserRoles);
+
+        return pharmacyUsers.stream()
+            .map(user -> {
+                Notification notification = new Notification()
+                    .type(NotificationType.EMAIL)
+                    .content(alert.getMessage())
+                    .alert(alert);
+
+                notification = notificationRepository.save(notification);
+                return notificationMapper.toDto(notification);
+            })
+            .toList();
+    }
+
+    /**
+     * Find notification by MailJet message ID.
+     *
+     * @param mailjetMessageId the MailJet message ID.
+     * @return the notification if found.
+     */
+    @Transactional(readOnly = true)
+    public Optional<Notification> findByMailjetMessageId(String mailjetMessageId) {
+        LOG.debug("Request to find Notification by MailJet message ID : {}", mailjetMessageId);
+        return Optional.ofNullable(notificationRepository.findByMailjetMessageId(mailjetMessageId));
     }
 }

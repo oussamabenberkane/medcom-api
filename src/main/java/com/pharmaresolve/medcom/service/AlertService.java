@@ -1,9 +1,12 @@
 package com.pharmaresolve.medcom.service;
 
 import com.pharmaresolve.medcom.domain.Alert;
+import com.pharmaresolve.medcom.domain.WatchlistItem;
+import com.pharmaresolve.medcom.domain.enumeration.AlertStatus;
 import com.pharmaresolve.medcom.repository.AlertRepository;
 import com.pharmaresolve.medcom.service.dto.AlertDTO;
 import com.pharmaresolve.medcom.service.mapper.AlertMapper;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +72,19 @@ public class AlertService {
     }
 
     /**
+     * Get all alerts for a specific watchlist.
+     *
+     * @param watchlistId the watchlist ID.
+     * @param pageable the pagination information.
+     * @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public Page<AlertDTO> findByWatchlistId(Long watchlistId, Pageable pageable) {
+        LOG.debug("Request to get all Alerts for watchlist : {}", watchlistId);
+        return alertRepository.findByWatchlistItemWatchlistIdOrderByCreatedDesc(watchlistId, pageable).map(alertMapper::toDto);
+    }
+
+    /**
      * Get one alert by id.
      *
      * @param id the id of the entity.
@@ -88,5 +104,40 @@ public class AlertService {
     public void delete(Long id) {
         LOG.debug("Request to delete Alert : {}", id);
         alertRepository.deleteById(id);
+    }
+
+    /**
+     * Create a product availability alert for a watchlist item.
+     *
+     * @param watchlistItem the watchlist item.
+     * @param isAvailable the availability status.
+     * @return the created alert.
+     */
+    public AlertDTO createProductAvailabilityAlert(WatchlistItem watchlistItem, boolean isAvailable) {
+        LOG.debug("Request to create availability alert for WatchlistItem : {}, available: {}", watchlistItem.getId(), isAvailable);
+
+        String availabilityStatus = isAvailable ? "Available" : "Unavailable";
+        String message = String.format("Product %s is now %s", watchlistItem.getProduct().getName(), availabilityStatus);
+
+        Alert alert = new Alert()
+            .status(AlertStatus.PENDING)
+            .message(message)
+            .created(ZonedDateTime.now())
+            .watchlistItem(watchlistItem);
+
+        alert = alertRepository.save(alert);
+        return alertMapper.toDto(alert);
+    }
+
+    /**
+     * Find alert by MailJet message ID.
+     *
+     * @param mailjetMessageId the MailJet message ID.
+     * @return the alert if found.
+     */
+    @Transactional(readOnly = true)
+    public Optional<Alert> findByMailjetMessageId(String mailjetMessageId) {
+        LOG.debug("Request to find Alert by MailJet message ID : {}", mailjetMessageId);
+        return Optional.ofNullable(alertRepository.findByMailjetMessageId(mailjetMessageId));
     }
 }
