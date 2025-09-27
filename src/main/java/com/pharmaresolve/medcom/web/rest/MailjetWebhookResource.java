@@ -3,6 +3,7 @@ package com.pharmaresolve.medcom.web.rest;
 import com.pharmaresolve.medcom.domain.Alert;
 import com.pharmaresolve.medcom.domain.Notification;
 import com.pharmaresolve.medcom.service.AlertService;
+import com.pharmaresolve.medcom.service.EmailDeliveryService;
 import com.pharmaresolve.medcom.service.NotificationService;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -25,10 +26,12 @@ public class MailjetWebhookResource {
 
     private final AlertService alertService;
     private final NotificationService notificationService;
+    private final EmailDeliveryService emailDeliveryService;
 
-    public MailjetWebhookResource(AlertService alertService, NotificationService notificationService) {
+    public MailjetWebhookResource(AlertService alertService, NotificationService notificationService, EmailDeliveryService emailDeliveryService) {
         this.alertService = alertService;
         this.notificationService = notificationService;
+        this.emailDeliveryService = emailDeliveryService;
     }
 
     /**
@@ -55,7 +58,17 @@ public class MailjetWebhookResource {
                 ZonedDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.systemDefault()) :
                 ZonedDateTime.now();
 
-            // Try to find notification first (notifications have the actual message ID)
+            // Use EmailDeliveryService to handle delivery status updates
+            boolean isDelivered = "delivered".equals(event);
+            boolean isFailed = "bounce".equals(event) || "blocked".equals(event) || "spam".equals(event);
+
+            if (isDelivered || isFailed) {
+                emailDeliveryService.updateDeliveryStatus(messageId, isDelivered);
+                LOG.debug("Updated delivery status for message {}: {}", messageId, event);
+                return ResponseEntity.ok("Status updated");
+            }
+
+            // For other events like "sent", we can still handle them
             Optional<Notification> notificationOpt = notificationService.findByMailjetMessageId(messageId);
             if (notificationOpt.isPresent()) {
                 updateNotificationStatus(notificationOpt.get(), event, eventTime);

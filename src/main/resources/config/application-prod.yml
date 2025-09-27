@@ -45,8 +45,8 @@ spring:
   mail:
     host: in-v3.mailjet.com
     port: 587
-    username: ${MAILJET_API_KEY}
-    password: ${MAILJET_SECRET_KEY}
+    username: ${jhipster.mail.mailjet.api-key}
+    password: ${jhipster.mail.mailjet.secret-key}
     properties:
       mail:
         smtp:
