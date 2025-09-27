@@ -1,6 +1,8 @@
 package com.pharmaresolve.medcom.service;
 
+import com.pharmaresolve.medcom.domain.Alert;
 import com.pharmaresolve.medcom.domain.User;
+import com.pharmaresolve.medcom.domain.WatchlistItem;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
@@ -116,5 +118,43 @@ public class MailService {
     public void sendPasswordResetMail(User user) {
         LOG.debug("Sending password reset email to '{}'", user.getEmail());
         sendEmailFromTemplateSync(user, "mail/passwordResetEmail", "email.reset.title");
+    }
+
+    /**
+     * Send alert email notification for product availability changes.
+     *
+     * @param userEmail the user email address
+     * @param alert the alert containing availability change information
+     * @param watchlistItem the watchlist item that triggered the alert
+     */
+    public void sendAlertEmail(String userEmail, Alert alert, WatchlistItem watchlistItem) {
+        LOG.debug("Sending alert email to '{}' for alert '{}'", userEmail, alert.getId());
+
+        try {
+            // Create context for the email template
+            Context context = new Context();
+            context.setVariable("alert", alert);
+            context.setVariable("watchlistItem", watchlistItem);
+            context.setVariable("product", watchlistItem.getProduct());
+            context.setVariable("pharmacy", watchlistItem.getWatchlist().getPharmacy());
+            context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
+
+            // Generate email content using alertEmail template
+            String content = templateEngine.process("mail/alertEmail", context);
+
+            // Create subject based on alert type and product
+            String subject = String.format("Product Availability Alert - %s",
+                watchlistItem.getProduct().getName());
+
+            // Send the email synchronously to get immediate feedback
+            sendEmailSync(userEmail, subject, content, false, true);
+
+            LOG.debug("Alert email sent successfully to '{}' for alert '{}'", userEmail, alert.getId());
+
+        } catch (Exception e) {
+            LOG.error("Failed to send alert email to '{}' for alert '{}': {}",
+                userEmail, alert.getId(), e.getMessage(), e);
+            throw new RuntimeException("Failed to send alert email", e);
+        }
     }
 }

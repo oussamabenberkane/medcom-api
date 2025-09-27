@@ -42,10 +42,17 @@ spring:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev, prod
   mail:
-    host: localhost
-    port: 25
-    username:
-    password:
+    host: in-v3.mailjet.com
+    port: 587
+    username: ${MAILJET_API_KEY:your-mailjet-api-key}
+    password: ${MAILJET_SECRET_KEY:your-mailjet-secret-key}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
   messages:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:

@@ -2,6 +2,7 @@ package com.pharmaresolve.medcom.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.pharmaresolve.medcom.domain.enumeration.NotificationType;
+import com.pharmaresolve.medcom.domain.enumeration.NotificationStatus;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -40,6 +41,19 @@ public class Notification implements Serializable {
 
     @Column(name = "mailjet_message_id")
     private String mailjetMessageId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private NotificationStatus status;
+
+    @Column(name = "error_message")
+    private String errorMessage;
+
+    @Column(name = "recipient_email")
+    private String recipientEmail;
+
+    @Column(name = "recipient_name")
+    private String recipientName;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "watchlistItem" }, allowSetters = true)
@@ -125,6 +139,58 @@ public class Notification implements Serializable {
         this.mailjetMessageId = mailjetMessageId;
     }
 
+    public NotificationStatus getStatus() {
+        return this.status;
+    }
+
+    public Notification status(NotificationStatus status) {
+        this.setStatus(status);
+        return this;
+    }
+
+    public void setStatus(NotificationStatus status) {
+        this.status = status;
+    }
+
+    public String getErrorMessage() {
+        return this.errorMessage;
+    }
+
+    public Notification errorMessage(String errorMessage) {
+        this.setErrorMessage(errorMessage);
+        return this;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    public String getRecipientEmail() {
+        return this.recipientEmail;
+    }
+
+    public Notification recipientEmail(String recipientEmail) {
+        this.setRecipientEmail(recipientEmail);
+        return this;
+    }
+
+    public void setRecipientEmail(String recipientEmail) {
+        this.recipientEmail = recipientEmail;
+    }
+
+    public String getRecipientName() {
+        return this.recipientName;
+    }
+
+    public Notification recipientName(String recipientName) {
+        this.setRecipientName(recipientName);
+        return this;
+    }
+
+    public void setRecipientName(String recipientName) {
+        this.recipientName = recipientName;
+    }
+
     public Alert getAlert() {
         return this.alert;
     }
@@ -167,6 +233,10 @@ public class Notification implements Serializable {
             ", sentAt='" + getSentAt() + "'" +
             ", deliveredAt='" + getDeliveredAt() + "'" +
             ", mailjetMessageId='" + getMailjetMessageId() + "'" +
+            ", status='" + getStatus() + "'" +
+            ", errorMessage='" + getErrorMessage() + "'" +
+            ", recipientEmail='" + getRecipientEmail() + "'" +
+            ", recipientName='" + getRecipientName() + "'" +
             "}";
     }
 }

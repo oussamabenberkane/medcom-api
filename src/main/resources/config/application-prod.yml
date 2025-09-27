@@ -43,10 +43,17 @@ spring:
   liquibase:
     contexts: prod
   mail:
-    host: localhost
-    port: 25
-    username:
-    password:
+    host: in-v3.mailjet.com
+    port: 587
+    username: ${MAILJET_API_KEY}
+    password: ${MAILJET_SECRET_KEY}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
   thymeleaf:
     cache: true
 

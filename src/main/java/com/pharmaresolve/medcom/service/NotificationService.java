@@ -4,6 +4,7 @@ import com.pharmaresolve.medcom.domain.Alert;
 import com.pharmaresolve.medcom.domain.Notification;
 import com.pharmaresolve.medcom.domain.User;
 import com.pharmaresolve.medcom.domain.enumeration.NotificationType;
+import com.pharmaresolve.medcom.domain.enumeration.NotificationStatus;
 import com.pharmaresolve.medcom.repository.NotificationRepository;
 import com.pharmaresolve.medcom.repository.UserRepository;
 import com.pharmaresolve.medcom.service.dto.NotificationDTO;
@@ -33,10 +34,13 @@ public class NotificationService {
 
     private final UserRepository userRepository;
 
-    public NotificationService(NotificationRepository notificationRepository, NotificationMapper notificationMapper, UserRepository userRepository) {
+    private final EmailDeliveryService emailDeliveryService;
+
+    public NotificationService(NotificationRepository notificationRepository, NotificationMapper notificationMapper, UserRepository userRepository, EmailDeliveryService emailDeliveryService) {
         this.notificationRepository = notificationRepository;
         this.notificationMapper = notificationMapper;
         this.userRepository = userRepository;
+        this.emailDeliveryService = emailDeliveryService;
     }
 
     /**
@@ -101,6 +105,7 @@ public class NotificationService {
 
     /**
      * Create email notifications for all pharmacy users when an alert is created.
+     * Also triggers email sending immediately after creating notifications.
      *
      * @param alert the alert for which to create notifications.
      * @return the list of created notifications.
@@ -112,16 +117,37 @@ public class NotificationService {
         List<String> pharmacyUserRoles = List.of("PHARMACY_USER");
         List<User> pharmacyUsers = userRepository.findByPharmacyIdAndActivatedIsTrueAndAuthorities_NameIn(pharmacyId, pharmacyUserRoles);
 
-        return pharmacyUsers.stream()
+        // Create notifications for each pharmacy user
+        List<Notification> createdNotifications = pharmacyUsers.stream()
             .map(user -> {
                 Notification notification = new Notification()
                     .type(NotificationType.EMAIL)
                     .content(alert.getMessage())
+                    .status(NotificationStatus.PENDING)
+                    .recipientEmail(user.getEmail())
+                    .recipientName(user.getFirstName() + " " + user.getLastName())
                     .alert(alert);
 
                 notification = notificationRepository.save(notification);
-                return notificationMapper.toDto(notification);
+
+                LOG.debug("Created notification {} for user {} ({})",
+                    notification.getId(), user.getLogin(), user.getEmail());
+
+                return notification;
             })
+            .toList();
+
+        LOG.info("Created {} notifications for alert {}, triggering email delivery",
+            createdNotifications.size(), alert.getId());
+
+        // Trigger email sending asynchronously
+        if (!createdNotifications.isEmpty()) {
+            emailDeliveryService.sendNotifications(createdNotifications);
+        }
+
+        // Convert to DTOs for return
+        return createdNotifications.stream()
+            .map(notificationMapper::toDto)
             .toList();
     }
 
