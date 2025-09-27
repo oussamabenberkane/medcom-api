@@ -1,7 +1,9 @@
 package com.pharmaresolve.medcom.web.rest;
 
 import com.pharmaresolve.medcom.repository.WatchlistRepository;
+import com.pharmaresolve.medcom.service.AlertService;
 import com.pharmaresolve.medcom.service.WatchlistService;
+import com.pharmaresolve.medcom.service.dto.AlertDTO;
 import com.pharmaresolve.medcom.service.dto.WatchlistDTO;
 import com.pharmaresolve.medcom.web.rest.errors.BadRequestAlertException;
 
@@ -37,8 +39,11 @@ public class WatchlistResource {
 
     private final WatchlistService watchlistService;
 
-    public WatchlistResource(WatchlistService watchlistService, WatchlistRepository watchlistRepository) {
+    private final AlertService alertService;
+
+    public WatchlistResource(WatchlistService watchlistService, WatchlistRepository watchlistRepository, AlertService alertService) {
         this.watchlistService = watchlistService;
+        this.alertService = alertService;
     }
 
     /**
@@ -79,5 +84,19 @@ public class WatchlistResource {
         LOG.debug("REST request to get Watchlist : {}", id);
         Optional<WatchlistDTO> watchlistDTO = watchlistService.findOne(id);
         return ResponseUtil.wrapOrNotFound(watchlistDTO);
+    }
+
+    /**
+     * Get all alerts for a watchlist.
+     */
+    @GetMapping("/{watchlistId}/alerts")
+    public ResponseEntity<List<AlertDTO>> getWatchlistAlerts(
+        @PathVariable("watchlistId") Long watchlistId,
+        @ParameterObject Pageable pageable
+    ) {
+        LOG.debug("REST request to get alerts for Watchlist : {}", watchlistId);
+        Page<AlertDTO> page = alertService.findByWatchlistId(watchlistId, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 }
