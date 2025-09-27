@@ -47,7 +47,7 @@ class UserMapperTest {
 
         Set<Authority> authorities = new HashSet<>();
         Authority authority = new Authority();
-        authority.setName(AuthoritiesConstants.USER);
+        authority.setName(AuthoritiesConstants.PHARMACY_USER);
         authorities.add(authority);
         user.setAuthorities(authorities);
 
@@ -70,7 +70,7 @@ class UserMapperTest {
         assertThat(convertedUserDto.getLastModifiedBy()).isEqualTo(user.getLastModifiedBy());
         assertThat(convertedUserDto.getLastModifiedDate()).isEqualTo(user.getLastModifiedDate());
         assertThat(convertedUserDto.getLangKey()).isEqualTo(user.getLangKey());
-        assertThat(convertedUserDto.getAuthorities()).containsExactly(AuthoritiesConstants.USER);
+        assertThat(convertedUserDto.getAuthorities()).containsExactly(AuthoritiesConstants.PHARMACY_USER);
     }
 
     @Test
@@ -89,7 +89,7 @@ class UserMapperTest {
         assertThat(convertedUser.getCreatedDate()).isEqualTo(userDto.getCreatedDate());
         assertThat(convertedUser.getLastModifiedBy()).isEqualTo(userDto.getLastModifiedBy());
         assertThat(convertedUser.getLastModifiedDate()).isEqualTo(userDto.getLastModifiedDate());
-        assertThat(convertedUser.getAuthorities()).extracting("name").containsExactly(AuthoritiesConstants.USER);
+        assertThat(convertedUser.getAuthorities()).extracting("name").containsExactly(AuthoritiesConstants.PHARMACY_USER);
     }
 
     @Test
@@ -152,7 +152,7 @@ class UserMapperTest {
         assertThat(convertedUser).isNotNull();
         assertThat(convertedUser.getAuthorities()).isNotNull();
         assertThat(convertedUser.getAuthorities()).isNotEmpty();
-        assertThat(convertedUser.getAuthorities().iterator().next().getName()).isEqualTo(AuthoritiesConstants.USER);
+        assertThat(convertedUser.getAuthorities().iterator().next().getName()).isEqualTo(AuthoritiesConstants.PHARMACY_USER);
     }
 
     @Test
