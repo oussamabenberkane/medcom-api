@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
  * Bridges the gap between notification creation and actual email sending.
  */
 @Service
-@Transactional
 public class EmailDeliveryService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EmailDeliveryService.class);
@@ -78,13 +77,11 @@ public class EmailDeliveryService {
         }
 
         try {
-            // Update status to indicate sending is in progress
-            notification.setStatus(NotificationStatus.SENT);
-            notification.setSentAt(ZonedDateTime.now());
-            notificationRepository.save(notification);
-
-            // Send the email using MailService
+            // Send the email using MailService first
             sendAlertEmail(notification, userEmail, userName);
+
+            // Only update status after successful email sending
+            updateNotificationStatusToSent(notification);
 
             LOG.debug("Email sent successfully for notification: {}", notification.getId());
 
@@ -144,17 +141,39 @@ public class EmailDeliveryService {
     }
 
     /**
+     * Update notification status to SENT after successful email sending.
+     *
+     * @param notification the notification that was sent
+     */
+    @Transactional
+    private void updateNotificationStatusToSent(Notification notification) {
+        try {
+            // Refresh the entity to get the latest version
+            Notification refreshedNotification = notificationRepository.findById(notification.getId()).orElse(notification);
+            refreshedNotification.setStatus(NotificationStatus.SENT);
+            refreshedNotification.setSentAt(ZonedDateTime.now());
+            notificationRepository.save(refreshedNotification);
+            LOG.debug("Updated notification {} status to SENT", refreshedNotification.getId());
+        } catch (Exception e) {
+            LOG.error("Failed to update notification status to SENT for {}: {}", notification.getId(), e.getMessage());
+        }
+    }
+
+    /**
      * Mark notification as failed with error message.
      *
      * @param notification the notification that failed
      * @param errorMessage the error message
      */
+    @Transactional
     private void markNotificationAsFailed(Notification notification, String errorMessage) {
         try {
-            notification.setStatus(NotificationStatus.FAILED);
-            notification.setErrorMessage(errorMessage);
-            notificationRepository.save(notification);
-            LOG.debug("Marked notification {} as FAILED: {}", notification.getId(), errorMessage);
+            // Refresh the entity to get the latest version
+            Notification refreshedNotification = notificationRepository.findById(notification.getId()).orElse(notification);
+            refreshedNotification.setStatus(NotificationStatus.FAILED);
+            refreshedNotification.setErrorMessage(errorMessage);
+            notificationRepository.save(refreshedNotification);
+            LOG.debug("Marked notification {} as FAILED: {}", refreshedNotification.getId(), errorMessage);
         } catch (Exception e) {
             LOG.error("Failed to update notification status for {}: {}", notification.getId(), e.getMessage());
         }
@@ -166,22 +185,31 @@ public class EmailDeliveryService {
      * @param mailjetMessageId the MailJet message ID
      * @param delivered true if delivered, false if failed
      */
+    @Transactional
     public void updateDeliveryStatus(String mailjetMessageId, boolean delivered) {
         LOG.debug("Updating delivery status for message: {}, delivered: {}", mailjetMessageId, delivered);
 
-        Notification notification = notificationRepository.findByMailjetMessageId(mailjetMessageId);
-        if (notification != null) {
-            if (delivered) {
-                notification.setStatus(NotificationStatus.DELIVERED);
-                notification.setDeliveredAt(ZonedDateTime.now());
+        try {
+            Notification notification = notificationRepository.findByMailjetMessageId(mailjetMessageId);
+            if (notification != null) {
+                // Refresh the entity to get the latest version
+                Notification refreshedNotification = notificationRepository.findById(notification.getId()).orElse(notification);
+
+                if (delivered) {
+                    refreshedNotification.setStatus(NotificationStatus.DELIVERED);
+                    refreshedNotification.setDeliveredAt(ZonedDateTime.now());
+                } else {
+                    refreshedNotification.setStatus(NotificationStatus.FAILED);
+                    refreshedNotification.setErrorMessage("Email delivery failed");
+                }
+
+                notificationRepository.save(refreshedNotification);
+                LOG.debug("Updated notification {} status to: {}", refreshedNotification.getId(), refreshedNotification.getStatus());
             } else {
-                notification.setStatus(NotificationStatus.FAILED);
-                notification.setErrorMessage("Email delivery failed");
+                LOG.warn("No notification found for MailJet message ID: {}", mailjetMessageId);
             }
-            notificationRepository.save(notification);
-            LOG.debug("Updated notification {} status to: {}", notification.getId(), notification.getStatus());
-        } else {
-            LOG.warn("No notification found for MailJet message ID: {}", mailjetMessageId);
+        } catch (Exception e) {
+            LOG.error("Failed to update delivery status for message {}: {}", mailjetMessageId, e.getMessage());
         }
     }
 }

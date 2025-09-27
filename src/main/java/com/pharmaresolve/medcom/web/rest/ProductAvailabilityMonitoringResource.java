@@ -36,11 +36,11 @@ public class ProductAvailabilityMonitoringResource {
     public ResponseEntity<MonitoringStatusResponse> getMonitoringStatus() {
         LOG.debug("REST request to get monitoring status");
 
-        ProductAvailabilitySchedulerService.SchedulerStatus schedulerStatus = schedulerService.getSchedulerStatus();
+        String schedulerStatus = schedulerService.getSchedulerStatus();
         ProductAvailabilityMonitoringService.MonitoringStats monitoringStats = monitoringService.getMonitoringStats();
 
         MonitoringStatusResponse response = new MonitoringStatusResponse();
-        response.setSchedulerStatus(schedulerStatus);
+        response.setSchedulerStatusMessage(schedulerStatus);
         response.setMonitoringStats(monitoringStats);
 
         return ResponseEntity.ok(response);
@@ -62,9 +62,9 @@ public class ProductAvailabilityMonitoringResource {
         }
 
         try {
-            int processedItems = schedulerService.triggerPriorityMonitoring(priority);
-            return ResponseEntity.ok(new TriggerResponse(processedItems,
-                String.format("Successfully processed %d items for priority %d", processedItems, priority)));
+            schedulerService.triggerManualCheck(priority);
+            return ResponseEntity.ok(new TriggerResponse(0,
+                String.format("Successfully triggered monitoring for priority %d", priority)));
         } catch (Exception e) {
             LOG.error("Error triggering monitoring for priority: {}", priority, e);
             return ResponseEntity.internalServerError()
@@ -92,105 +92,21 @@ public class ProductAvailabilityMonitoringResource {
         }
     }
 
-    /**
-     * POST /api/monitoring/scheduler/restart : Restart all schedulers.
-     *
-     * @return confirmation message
-     */
-    @PostMapping("/scheduler/restart")
-    public ResponseEntity<String> restartSchedulers() {
-        LOG.debug("REST request to restart all schedulers");
 
-        try {
-            schedulerService.restartAllSchedulers();
-            return ResponseEntity.ok("All schedulers restarted successfully");
-        } catch (Exception e) {
-            LOG.error("Error restarting schedulers", e);
-            return ResponseEntity.internalServerError()
-                .body("Error restarting schedulers: " + e.getMessage());
-        }
-    }
-
-    /**
-     * POST /api/monitoring/scheduler/stop : Stop all schedulers.
-     *
-     * @return confirmation message
-     */
-    @PostMapping("/scheduler/stop")
-    public ResponseEntity<String> stopSchedulers() {
-        LOG.debug("REST request to stop all schedulers");
-
-        try {
-            schedulerService.stopAllSchedulers();
-            return ResponseEntity.ok("All schedulers stopped successfully");
-        } catch (Exception e) {
-            LOG.error("Error stopping schedulers", e);
-            return ResponseEntity.internalServerError()
-                .body("Error stopping schedulers: " + e.getMessage());
-        }
-    }
-
-    /**
-     * POST /api/monitoring/scheduler/start/{priority} : Start scheduler for specific priority.
-     *
-     * @param priority the priority level
-     * @return confirmation message
-     */
-    @PostMapping("/scheduler/start/{priority}")
-    public ResponseEntity<String> startPriorityScheduler(@PathVariable Integer priority) {
-        LOG.debug("REST request to start scheduler for priority: {}", priority);
-
-        if (priority < 1 || priority > 3) {
-            return ResponseEntity.badRequest().body("Invalid priority. Must be between 1 and 3.");
-        }
-
-        try {
-            schedulerService.startPriorityScheduler(priority);
-            return ResponseEntity.ok(String.format("Scheduler for priority %d started successfully", priority));
-        } catch (Exception e) {
-            LOG.error("Error starting scheduler for priority: {}", priority, e);
-            return ResponseEntity.internalServerError()
-                .body("Error starting scheduler: " + e.getMessage());
-        }
-    }
-
-    /**
-     * POST /api/monitoring/scheduler/stop/{priority} : Stop scheduler for specific priority.
-     *
-     * @param priority the priority level
-     * @return confirmation message
-     */
-    @PostMapping("/scheduler/stop/{priority}")
-    public ResponseEntity<String> stopPriorityScheduler(@PathVariable Integer priority) {
-        LOG.debug("REST request to stop scheduler for priority: {}", priority);
-
-        if (priority < 1 || priority > 3) {
-            return ResponseEntity.badRequest().body("Invalid priority. Must be between 1 and 3.");
-        }
-
-        try {
-            schedulerService.stopPriorityScheduler(priority);
-            return ResponseEntity.ok(String.format("Scheduler for priority %d stopped successfully", priority));
-        } catch (Exception e) {
-            LOG.error("Error stopping scheduler for priority: {}", priority, e);
-            return ResponseEntity.internalServerError()
-                .body("Error stopping scheduler: " + e.getMessage());
-        }
-    }
 
     /**
      * Response DTO for monitoring status.
      */
     public static class MonitoringStatusResponse {
-        private ProductAvailabilitySchedulerService.SchedulerStatus schedulerStatus;
+        private String schedulerStatusMessage;
         private ProductAvailabilityMonitoringService.MonitoringStats monitoringStats;
 
-        public ProductAvailabilitySchedulerService.SchedulerStatus getSchedulerStatus() {
-            return schedulerStatus;
+        public String getSchedulerStatusMessage() {
+            return schedulerStatusMessage;
         }
 
-        public void setSchedulerStatus(ProductAvailabilitySchedulerService.SchedulerStatus schedulerStatus) {
-            this.schedulerStatus = schedulerStatus;
+        public void setSchedulerStatusMessage(String schedulerStatusMessage) {
+            this.schedulerStatusMessage = schedulerStatusMessage;
         }
 
         public ProductAvailabilityMonitoringService.MonitoringStats getMonitoringStats() {
@@ -204,7 +120,7 @@ public class ProductAvailabilityMonitoringResource {
         @Override
         public String toString() {
             return "MonitoringStatusResponse{" +
-                "schedulerStatus=" + schedulerStatus +
+                "schedulerStatusMessage='" + schedulerStatusMessage + '\'' +
                 ", monitoringStats=" + monitoringStats +
                 '}';
         }
