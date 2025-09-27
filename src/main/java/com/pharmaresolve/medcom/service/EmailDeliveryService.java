@@ -70,6 +70,7 @@ public class EmailDeliveryService {
         // For now, we'll extract the user email from the notification content or alert context
 
         String userEmail = extractUserEmailFromNotification(notification);
+        String userName = extractUserNameFromNotification(notification);
         if (userEmail == null) {
             LOG.warn("Cannot determine user email for notification: {}", notification.getId());
             markNotificationAsFailed(notification, "User email not found");
@@ -83,7 +84,7 @@ public class EmailDeliveryService {
             notificationRepository.save(notification);
 
             // Send the email using MailService
-            sendAlertEmail(notification, userEmail);
+            sendAlertEmail(notification, userEmail, userName);
 
             LOG.debug("Email sent successfully for notification: {}", notification.getId());
 
@@ -98,8 +99,9 @@ public class EmailDeliveryService {
      *
      * @param notification the notification containing the alert
      * @param userEmail recipient email address
+     * @param userName recipient name
      */
-    private void sendAlertEmail(Notification notification, String userEmail) {
+    private void sendAlertEmail(Notification notification, String userEmail, String userName) {
         // Use the existing alertEmail template from MailService
         // We need to pass the required context variables
 
@@ -108,6 +110,7 @@ public class EmailDeliveryService {
             // This will be updated when we modify MailService to accept Notification entities
             mailService.sendAlertEmail(
                 userEmail,
+                userName,
                 notification.getAlert(),
                 notification.getAlert().getWatchlistItem()
             );
@@ -128,6 +131,16 @@ public class EmailDeliveryService {
      */
     private String extractUserEmailFromNotification(Notification notification) {
         return notification.getRecipientEmail();
+    }
+
+    /**
+     * Extract user email from notification.
+     *
+     * @param notification the notification
+     * @return user email or null if not found
+     */
+    private String extractUserNameFromNotification(Notification notification) {
+        return notification.getRecipientName();
     }
 
     /**

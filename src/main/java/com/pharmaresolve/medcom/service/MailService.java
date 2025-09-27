@@ -124,10 +124,11 @@ public class MailService {
      * Send alert email notification for product availability changes.
      *
      * @param userEmail the user email address
+     * @param userName the user's name
      * @param alert the alert containing availability change information
      * @param watchlistItem the watchlist item that triggered the alert
      */
-    public void sendAlertEmail(String userEmail, Alert alert, WatchlistItem watchlistItem) {
+    public void sendAlertEmail(String userEmail, String userName, Alert alert, WatchlistItem watchlistItem) {
         LOG.debug("Sending alert email to '{}' for alert '{}'", userEmail, alert.getId());
 
         try {
@@ -137,6 +138,7 @@ public class MailService {
             context.setVariable("watchlistItem", watchlistItem);
             context.setVariable("product", watchlistItem.getProduct());
             context.setVariable("pharmacy", watchlistItem.getWatchlist().getPharmacy());
+            context.setVariable("userName", userName);
             context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
 
             // Generate email content using alertEmail template

@@ -114,7 +114,7 @@ public class NotificationService {
         LOG.debug("Request to create email notifications for Alert : {}", alert.getId());
 
         Long pharmacyId = alert.getWatchlistItem().getWatchlist().getPharmacy().getId();
-        List<String> pharmacyUserRoles = List.of("PHARMACY_USER");
+        List<String> pharmacyUserRoles = List.of("ROLE_USER");
         List<User> pharmacyUsers = userRepository.findByPharmacyIdAndActivatedIsTrueAndAuthorities_NameIn(pharmacyId, pharmacyUserRoles);
 
         // Create notifications for each pharmacy user
