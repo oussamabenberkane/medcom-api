@@ -33,4 +33,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findOneWithAuthoritiesByEmailIgnoreCase(String email);
 
     Page<User> findAllByIdNotNullAndActivatedIsTrue(Pageable pageable);
+
+    List<User> findByPharmacyIdAndActivatedIsTrueAndAuthorities_NameIn(Long pharmacyId, List<String> roles);
 }
