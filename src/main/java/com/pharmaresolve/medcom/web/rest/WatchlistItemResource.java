@@ -115,7 +115,7 @@ public class WatchlistItemResource {
     public ResponseEntity<WatchlistItemDTO> getWatchlistItem(@PathVariable Long pharmacyId, @PathVariable Long itemId) {
         LOG.debug("REST request to get WatchlistItem {} from pharmacy {}", itemId, pharmacyId);
 
-        Optional<WatchlistItemDTO> watchlistItemDTO = watchlistItemService.findItemByIdAndPharmacy(pharmacyId, itemId);
+        Optional<WatchlistItemDTO> watchlistItemDTO = watchlistItemService.findItemByIdAndPharmacy(itemId, pharmacyId);
         return ResponseUtil.wrapOrNotFound(watchlistItemDTO);
     }
 }

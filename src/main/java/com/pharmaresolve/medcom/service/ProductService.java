@@ -57,26 +57,6 @@ public class ProductService {
     }
 
     /**
-     * Partially update a product.
-     *
-     * @param productDTO the entity to update partially.
-     * @return the persisted entity.
-     */
-    public Optional<ProductDTO> partialUpdate(ProductDTO productDTO) {
-        LOG.debug("Request to partially update Product : {}", productDTO);
-
-        return productRepository
-            .findById(productDTO.getId())
-            .map(existingProduct -> {
-                productMapper.partialUpdate(existingProduct, productDTO);
-
-                return existingProduct;
-            })
-            .map(productRepository::save)
-            .map(productMapper::toDto);
-    }
-
-    /**
      * Get all the products.
      *
      * @param pageable the pagination information.

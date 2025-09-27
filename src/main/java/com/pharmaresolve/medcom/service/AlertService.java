@@ -57,26 +57,6 @@ public class AlertService {
     }
 
     /**
-     * Partially update a alert.
-     *
-     * @param alertDTO the entity to update partially.
-     * @return the persisted entity.
-     */
-    public Optional<AlertDTO> partialUpdate(AlertDTO alertDTO) {
-        LOG.debug("Request to partially update Alert : {}", alertDTO);
-
-        return alertRepository
-            .findById(alertDTO.getId())
-            .map(existingAlert -> {
-                alertMapper.partialUpdate(existingAlert, alertDTO);
-
-                return existingAlert;
-            })
-            .map(alertRepository::save)
-            .map(alertMapper::toDto);
-    }
-
-    /**
      * Get all the alerts.
      *
      * @param pageable the pagination information.

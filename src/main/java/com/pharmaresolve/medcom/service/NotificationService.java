@@ -57,26 +57,6 @@ public class NotificationService {
     }
 
     /**
-     * Partially update a notification.
-     *
-     * @param notificationDTO the entity to update partially.
-     * @return the persisted entity.
-     */
-    public Optional<NotificationDTO> partialUpdate(NotificationDTO notificationDTO) {
-        LOG.debug("Request to partially update Notification : {}", notificationDTO);
-
-        return notificationRepository
-            .findById(notificationDTO.getId())
-            .map(existingNotification -> {
-                notificationMapper.partialUpdate(existingNotification, notificationDTO);
-
-                return existingNotification;
-            })
-            .map(notificationRepository::save)
-            .map(notificationMapper::toDto);
-    }
-
-    /**
      * Get all the notifications.
      *
      * @param pageable the pagination information.

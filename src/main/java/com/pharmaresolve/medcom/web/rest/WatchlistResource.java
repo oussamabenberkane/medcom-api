@@ -36,11 +36,9 @@ public class WatchlistResource {
     private String applicationName;
 
     private final WatchlistService watchlistService;
-    private final WatchlistRepository watchlistRepository;
 
     public WatchlistResource(WatchlistService watchlistService, WatchlistRepository watchlistRepository) {
         this.watchlistService = watchlistService;
-        this.watchlistRepository = watchlistRepository;
     }
 
     /**

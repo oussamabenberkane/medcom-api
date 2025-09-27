@@ -66,6 +66,8 @@ public class WatchlistItemService {
             if (watchlistItemRepository.existsByWatchlistIdAndProductId(pharmacyId, watchlistItemDTO.getProductId())) {
                 throw new BadRequestAlertException("Product already exists in this watchlist", "watchlistItem", "productduplicate");
             }
+        } else {
+            throw new BadRequestAlertException("Product is required", "watchlistItem", "productrequired");
         }
 
         long currentItemCount = watchlistItemRepository.countByWatchlistId(pharmacyId);
@@ -80,6 +82,8 @@ public class WatchlistItemService {
         watchlistItemDTO.setAlertEnabled(true);
         if (watchlistItemDTO.getPriority() == null) {
             watchlistItemDTO.setPriority(1);
+        } else if (watchlistItemDTO.getPriority() <= 0){
+            throw new BadRequestAlertException("Please provide a strictly positive priority", "watchlistItem", "priorityinvalid");
         }
 
         return save(watchlistItemDTO);
@@ -95,8 +99,11 @@ public class WatchlistItemService {
             .orElseThrow(() -> new BadRequestAlertException("Watchlist item not found or doesn't belong to this pharmacy", "watchlistItem", "itemnotfound"));
 
         // Set audit fields for update
+        if (watchlistItemDTO.getPriority() <= 0){
+            throw new BadRequestAlertException("Please provide a strictly positive priority", "watchlistItem", "priorityinvalid");
+        }
         existingItem.setPriority(watchlistItemDTO.getPriority());
-        existingItem.setAlertEnabled(watchlistItemDTO.getAlertEnabled());
+        if (watchlistItemDTO.getAlertEnabled() != null) existingItem.setAlertEnabled(watchlistItemDTO.getAlertEnabled());
         existingItem.setDateUpdated(ZonedDateTime.now());
         existingItem.setUpdatedBy("Admin");
 
@@ -130,7 +137,7 @@ public class WatchlistItemService {
      * Get a watchlist item by ID for a pharmacy.
      */
     @Transactional(readOnly = true)
-    public Optional<WatchlistItemDTO> findItemByIdAndPharmacy(Long pharmacyId, Long itemId) {
+    public Optional<WatchlistItemDTO> findItemByIdAndPharmacy(Long itemId, Long pharmacyId) {
         LOG.debug("Request to get WatchlistItem {} for pharmacy {}", itemId, pharmacyId);
         return watchlistItemRepository.findByIdAndWatchlistId(itemId, pharmacyId).map(watchlistItemMapper::toDto);
     }

@@ -98,42 +98,6 @@ public class NotificationResource {
     }
 
     /**
-     * {@code PATCH  /notifications/:id} : Partial updates given fields of an existing notification, field will ignore if it is null
-     *
-     * @param id the id of the notificationDTO to save.
-     * @param notificationDTO the notificationDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated notificationDTO,
-     * or with status {@code 400 (Bad Request)} if the notificationDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the notificationDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the notificationDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<NotificationDTO> partialUpdateNotification(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody NotificationDTO notificationDTO
-    ) throws URISyntaxException {
-        LOG.debug("REST request to partial update Notification partially : {}, {}", id, notificationDTO);
-        if (notificationDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, notificationDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!notificationRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<NotificationDTO> result = notificationService.partialUpdate(notificationDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, notificationDTO.getId().toString())
-        );
-    }
-
-    /**
      * {@code GET  /notifications} : get all the notifications.
      *
      * @param pageable the pagination information.
