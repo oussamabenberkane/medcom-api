@@ -228,6 +228,60 @@ public class ProductAvailabilityMonitoringService {
     }
 
     /**
+     * Find watchlist items that need monitoring for a specific pharmacy.
+     *
+     * @param pharmacyId the pharmacy ID
+     * @return list of watchlist items to monitor for this pharmacy
+     */
+    private List<WatchlistItem> findWatchlistItemsForPharmacy(Long pharmacyId) {
+        // Find items with:
+        // - alertEnabled = true
+        // - watchlist belongs to the specified pharmacy
+        // - pharmacy is active
+        return watchlistItemRepository.findByAlertEnabledTrueAndWatchlistPharmacyIdAndWatchlistPharmacyActiveTrue(pharmacyId);
+    }
+
+    /**
+     * Process availability monitoring for all watchlist items of a specific pharmacy.
+     * Regardless of priority, processes all alert-enabled items for the pharmacy.
+     *
+     * @param pharmacyId the pharmacy ID to process
+     * @return PharmacyMonitoringResult containing processing statistics
+     */
+    public PharmacyMonitoringResult processAvailabilityForPharmacy(Long pharmacyId) {
+        LOG.info("Starting availability monitoring for pharmacy: {}", pharmacyId);
+
+        List<WatchlistItem> items = findWatchlistItemsForPharmacy(pharmacyId);
+        LOG.debug("Found {} watchlist items for pharmacy {} for monitoring", items.size(), pharmacyId);
+
+        int processedCount = 0;
+        List<Alert> createdAlerts = new ArrayList<>();
+
+        for (WatchlistItem item : items) {
+            try {
+                Alert alert = processWatchlistItemWithoutNotification(item);
+                if (alert != null) {
+                    createdAlerts.add(alert);
+                }
+                processedCount++;
+            } catch (Exception e) {
+                LOG.error("Error processing watchlist item: {} for product: {} in pharmacy: {}",
+                    item.getId(), item.getProduct().getName(), pharmacyId, e);
+            }
+        }
+
+        // Send consolidated notifications for all created alerts
+        if (!createdAlerts.isEmpty()) {
+            notificationService.createConsolidatedEmailNotifications(createdAlerts);
+        }
+
+        LOG.info("Completed availability monitoring for pharmacy: {}. Processed: {}, Alerts created: {}",
+            pharmacyId, processedCount, createdAlerts.size());
+
+        return new PharmacyMonitoringResult(pharmacyId, processedCount, createdAlerts.size());
+    }
+
+    /**
      * Get monitoring statistics.
      *
      * @return monitoring statistics
@@ -279,6 +333,56 @@ public class ProductAvailabilityMonitoringService {
             return "MonitoringStats{" +
                 "totalMonitoredItems=" + totalMonitoredItems +
                 ", priorityCounts=" + priorityCounts +
+                '}';
+        }
+    }
+
+    /**
+     * Result of pharmacy monitoring operations.
+     */
+    public static class PharmacyMonitoringResult {
+        private Long pharmacyId;
+        private int processedItems;
+        private int alertsCreated;
+
+        public PharmacyMonitoringResult() {}
+
+        public PharmacyMonitoringResult(Long pharmacyId, int processedItems, int alertsCreated) {
+            this.pharmacyId = pharmacyId;
+            this.processedItems = processedItems;
+            this.alertsCreated = alertsCreated;
+        }
+
+        public Long getPharmacyId() {
+            return pharmacyId;
+        }
+
+        public void setPharmacyId(Long pharmacyId) {
+            this.pharmacyId = pharmacyId;
+        }
+
+        public int getProcessedItems() {
+            return processedItems;
+        }
+
+        public void setProcessedItems(int processedItems) {
+            this.processedItems = processedItems;
+        }
+
+        public int getAlertsCreated() {
+            return alertsCreated;
+        }
+
+        public void setAlertsCreated(int alertsCreated) {
+            this.alertsCreated = alertsCreated;
+        }
+
+        @Override
+        public String toString() {
+            return "PharmacyMonitoringResult{" +
+                "pharmacyId=" + pharmacyId +
+                ", processedItems=" + processedItems +
+                ", alertsCreated=" + alertsCreated +
                 '}';
         }
     }

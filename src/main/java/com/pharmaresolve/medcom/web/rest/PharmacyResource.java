@@ -2,6 +2,7 @@ package com.pharmaresolve.medcom.web.rest;
 
 import com.pharmaresolve.medcom.repository.PharmacyRepository;
 import com.pharmaresolve.medcom.service.PharmacyService;
+import com.pharmaresolve.medcom.service.ProductAvailabilityMonitoringService;
 import com.pharmaresolve.medcom.service.dto.PharmacyDTO;
 import com.pharmaresolve.medcom.web.rest.errors.BadRequestAlertException;
 
@@ -39,10 +40,12 @@ public class PharmacyResource {
 
     private final PharmacyService pharmacyService;
     private final PharmacyRepository pharmacyRepository;
+    private final ProductAvailabilityMonitoringService monitoringService;
 
-    public PharmacyResource(PharmacyService pharmacyService, PharmacyRepository pharmacyRepository) {
+    public PharmacyResource(PharmacyService pharmacyService, PharmacyRepository pharmacyRepository, ProductAvailabilityMonitoringService monitoringService) {
         this.pharmacyService = pharmacyService;
         this.pharmacyRepository = pharmacyRepository;
+        this.monitoringService = monitoringService;
     }
 
     /**
@@ -106,6 +109,47 @@ public class PharmacyResource {
     }
 
     /**
+     * Manually trigger availability check for all watchlist items of a pharmacy.
+     * Processes all alert-enabled items regardless of priority and sends consolidated emails immediately.
+     *
+     * @param pharmacyId the pharmacy ID to trigger availability check for
+     * @return processing results including number of items processed and alerts created
+     */
+    @PostMapping("/{pharmacyId}/trigger-availability-check")
+    public ResponseEntity<TriggerAvailabilityCheckResponse> triggerAvailabilityCheck(@PathVariable("pharmacyId") Long pharmacyId) {
+        LOG.debug("REST request to trigger availability check for pharmacy: {}", pharmacyId);
+
+        try {
+            // Verify pharmacy exists
+            Optional<PharmacyDTO> pharmacy = pharmacyService.findOne(pharmacyId);
+            if (pharmacy.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Trigger the availability check
+            ProductAvailabilityMonitoringService.PharmacyMonitoringResult result =
+                monitoringService.processAvailabilityForPharmacy(pharmacyId);
+
+            TriggerAvailabilityCheckResponse response = new TriggerAvailabilityCheckResponse(
+                result.getPharmacyId(),
+                result.getProcessedItems(),
+                result.getAlertsCreated(),
+                String.format("Successfully processed %d items for pharmacy %d. Created %d alerts and sent consolidated emails.",
+                    result.getProcessedItems(), result.getPharmacyId(), result.getAlertsCreated())
+            );
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            LOG.error("Error triggering availability check for pharmacy: {}", pharmacyId, e);
+            TriggerAvailabilityCheckResponse errorResponse = new TriggerAvailabilityCheckResponse(
+                pharmacyId, 0, 0, "Error triggering availability check: " + e.getMessage()
+            );
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
      * Delete a pharmacy by ID.
      */
     @DeleteMapping("/{id}")
@@ -116,5 +160,66 @@ public class PharmacyResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    /**
+     * Response DTO for trigger availability check operations.
+     */
+    public static class TriggerAvailabilityCheckResponse {
+        private Long pharmacyId;
+        private int processedItems;
+        private int alertsCreated;
+        private String message;
+
+        public TriggerAvailabilityCheckResponse() {}
+
+        public TriggerAvailabilityCheckResponse(Long pharmacyId, int processedItems, int alertsCreated, String message) {
+            this.pharmacyId = pharmacyId;
+            this.processedItems = processedItems;
+            this.alertsCreated = alertsCreated;
+            this.message = message;
+        }
+
+        public Long getPharmacyId() {
+            return pharmacyId;
+        }
+
+        public void setPharmacyId(Long pharmacyId) {
+            this.pharmacyId = pharmacyId;
+        }
+
+        public int getProcessedItems() {
+            return processedItems;
+        }
+
+        public void setProcessedItems(int processedItems) {
+            this.processedItems = processedItems;
+        }
+
+        public int getAlertsCreated() {
+            return alertsCreated;
+        }
+
+        public void setAlertsCreated(int alertsCreated) {
+            this.alertsCreated = alertsCreated;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        @Override
+        public String toString() {
+            return "TriggerAvailabilityCheckResponse{" +
+                "pharmacyId=" + pharmacyId +
+                ", processedItems=" + processedItems +
+                ", alertsCreated=" + alertsCreated +
+                ", message='" + message + '\'' +
+                '}';
+        }
     }
 }

@@ -28,6 +28,8 @@ public interface WatchlistItemRepository extends JpaRepository<WatchlistItem, Lo
 
     List<WatchlistItem> findByAlertEnabledTrueAndPriorityAndWatchlistPharmacyActiveTrue(Integer priority);
 
+    List<WatchlistItem> findByAlertEnabledTrueAndWatchlistPharmacyIdAndWatchlistPharmacyActiveTrue(Long pharmacyId);
+
     long countByAlertEnabledTrueAndWatchlistPharmacyActiveTrue();
 
     long countByAlertEnabledTrueAndPriorityAndWatchlistPharmacyActiveTrue(Integer priority);
