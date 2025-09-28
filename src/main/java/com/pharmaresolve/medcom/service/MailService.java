@@ -8,7 +8,10 @@ import com.pharmaresolve.medcom.repository.PharmacyRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -167,5 +170,105 @@ public class MailService {
                 userEmail, alert.getId(), e.getMessage(), e);
             throw new RuntimeException("Failed to send alert email", e);
         }
+    }
+
+    /**
+     * Send consolidated alert email for multiple product availability changes.
+     * This method safely handles lazy loading issues by extracting data upfront.
+     *
+     * @param userEmail the recipient email
+     * @param userName the recipient name
+     * @param alerts the list of alerts to include in the email
+     */
+    public void sendConsolidatedAlertEmail(String userEmail, String userName, List<Alert> alerts) {
+        LOG.debug("Sending consolidated alert email to '{}' for {} alerts", userEmail, alerts.size());
+
+        if (alerts.isEmpty()) {
+            throw new IllegalArgumentException("Cannot send consolidated email with no alerts");
+        }
+
+        try {
+            // Create context for the consolidated email template
+            Context context = new Context();
+            context.setVariable("userName", userName);
+            context.setVariable("alertCount", alerts.size());
+            context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
+
+            // Get pharmacy info safely from the first alert to avoid lazy loading issues
+            Map<String, Object> pharmacyContext = extractPharmacyContext(alerts.get(0));
+            context.setVariable("pharmacy", pharmacyContext);
+
+            // Create a list of product context objects to avoid lazy loading issues
+            List<Map<String, Object>> productContexts = alerts.stream()
+                .map(this::extractProductContext)
+                .toList();
+            context.setVariable("products", productContexts);
+
+            // Generate email content using consolidated alert email template
+            String content = templateEngine.process("mail/consolidatedAlertEmail", context);
+
+            // Send email
+            String subject = String.format("Product Availability Updates - %d products changed", alerts.size());
+            sendEmail(userEmail, subject, content, false, true);
+
+            LOG.debug("Successfully sent consolidated alert email to '{}' for {} alerts", userEmail, alerts.size());
+        } catch (Exception ex) {
+            LOG.error("Failed to send consolidated alert email to '{}': {}", userEmail, ex.getMessage(), ex);
+            throw new RuntimeException("Failed to send consolidated alert email", ex);
+        }
+    }
+
+    /**
+     * Extract pharmacy context safely to avoid lazy loading issues.
+     */
+    private Map<String, Object> extractPharmacyContext(Alert alert) {
+        Map<String, Object> pharmacyContext = new HashMap<>();
+        try {
+            var pharmacy = alert.getWatchlistItem().getWatchlist().getPharmacy();
+            pharmacyContext.put("name", pharmacy.getName());
+            pharmacyContext.put("address", pharmacy.getAddress());
+            pharmacyContext.put("email", pharmacy.getEmail());
+            pharmacyContext.put("phone", pharmacy.getPhone());
+        } catch (Exception e) {
+            LOG.warn("Could not load pharmacy details due to lazy loading: {}", e.getMessage());
+            pharmacyContext.put("name", "Pharmacy");
+            pharmacyContext.put("address", "");
+            pharmacyContext.put("email", "");
+            pharmacyContext.put("phone", "");
+        }
+        return pharmacyContext;
+    }
+
+    /**
+     * Extract product context safely to avoid lazy loading issues.
+     */
+    private Map<String, Object> extractProductContext(Alert alert) {
+        Map<String, Object> productContext = new HashMap<>();
+        try {
+            var product = alert.getWatchlistItem().getProduct();
+            productContext.put("name", product.getName());
+            productContext.put("uniqueId", product.getUniqueId());
+            productContext.put("atcCode", product.getAtcCode());
+            productContext.put("officialUrl", product.getOfficialUrl());
+            productContext.put("message", alert.getMessage());
+            productContext.put("created", alert.getCreated());
+            productContext.put("priority", alert.getWatchlistItem().getPriority());
+
+            // Determine status from alert message
+            boolean isAvailable = alert.getMessage().toLowerCase().contains("available") &&
+                                !alert.getMessage().toLowerCase().contains("unavailable");
+            productContext.put("isAvailable", isAvailable);
+            productContext.put("status", isAvailable ? "Available" : "Unavailable");
+
+        } catch (Exception e) {
+            LOG.warn("Could not load product details for alert {}: {}", alert.getId(), e.getMessage());
+            productContext.put("name", "Product");
+            productContext.put("message", alert.getMessage());
+            productContext.put("created", alert.getCreated());
+            productContext.put("isAvailable", true);
+            productContext.put("status", "Unknown");
+            productContext.put("priority", 1);
+        }
+        return productContext;
     }
 }

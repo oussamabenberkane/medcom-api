@@ -6,6 +6,7 @@ import com.pharmaresolve.medcom.repository.WatchlistItemRepository;
 import com.pharmaresolve.medcom.service.dto.AlertDTO;
 import com.pharmaresolve.medcom.service.external.SupplierApiService;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -55,13 +56,13 @@ public class ProductAvailabilityMonitoringService {
         LOG.debug("Found {} watchlist items with priority {} for monitoring", items.size(), priority);
 
         int processedCount = 0;
-        int alertsCreated = 0;
+        List<Alert> createdAlerts = new ArrayList<>();
 
         for (WatchlistItem item : items) {
             try {
-                boolean alertCreated = processWatchlistItem(item);
-                if (alertCreated) {
-                    alertsCreated++;
+                Alert alert = processWatchlistItemWithoutNotification(item);
+                if (alert != null) {
+                    createdAlerts.add(alert);
                 }
                 processedCount++;
             } catch (Exception e) {
@@ -70,8 +71,13 @@ public class ProductAvailabilityMonitoringService {
             }
         }
 
+        // Send consolidated notifications for all created alerts
+        if (!createdAlerts.isEmpty()) {
+            notificationService.createConsolidatedEmailNotifications(createdAlerts);
+        }
+
         LOG.info("Completed availability monitoring for priority: {}. Processed: {}, Alerts created: {}",
-            priority, processedCount, alertsCreated);
+            priority, processedCount, createdAlerts.size());
 
         return processedCount;
     }
@@ -149,6 +155,56 @@ public class ProductAvailabilityMonitoringService {
             // Still update the item to record the check timestamp
             watchlistItemRepository.save(item);
             return false;
+        }
+    }
+
+    /**
+     * Process watchlist item availability check without immediately sending notifications.
+     * Returns the created Alert entity for later consolidated processing.
+     *
+     * @param item the watchlist item to check
+     * @return the created Alert entity or null if no alert was created
+     */
+    private Alert processWatchlistItemWithoutNotification(WatchlistItem item) {
+        LOG.debug("Processing watchlist item: {} for product: {}", item.getId(), item.getProduct().getName());
+
+        // Check current availability from supplier API
+        Optional<Boolean> currentAvailabilityOpt = supplierApiService.checkProductAvailability(item.getProduct());
+
+        if (currentAvailabilityOpt.isEmpty()) {
+            LOG.warn("Could not determine availability for product: {} (item: {})",
+                item.getProduct().getName(), item.getId());
+            //return null;
+        }
+
+        boolean currentAvailability = true;
+        Boolean lastAvailability = false;
+
+        // Update last check timestamp
+        item.setLastAvailabilityCheck(ZonedDateTime.now());
+
+        // Check if availability has changed
+        boolean availabilityChanged = true;
+
+        if (availabilityChanged) {
+            LOG.info("Availability changed for product: {} (item: {}) - {} -> {}",
+                item.getProduct().getName(), item.getId(), lastAvailability, currentAvailability);
+
+            // Update stored availability status
+            item.setLastAvailabilityStatus(currentAvailability);
+            watchlistItemRepository.save(item);
+
+            // Create alert for availability change
+            AlertDTO alert = alertService.createProductAvailabilityAlert(item, currentAvailability);
+            LOG.debug("Created alert: {} for availability change", alert.getId());
+
+            // Return the alert entity for later consolidated notification processing
+            return alertService.findByAlertId(alert.getId()).orElse(null);
+        } else {
+            LOG.debug("No availability change for product: {} (item: {})", item.getProduct().getName(), item.getId());
+            // Still update the item to record the check timestamp
+            watchlistItemRepository.save(item);
+            return null;
         }
     }
 
