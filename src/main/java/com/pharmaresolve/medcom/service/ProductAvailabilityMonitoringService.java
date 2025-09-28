@@ -115,7 +115,7 @@ public class ProductAvailabilityMonitoringService {
     private boolean processWatchlistItem(WatchlistItem item) {
         LOG.debug("Processing watchlist item: {} for product: {}", item.getId(), item.getProduct().getName());
 
-        // Check current availability from supplier API
+        // Check current availability from supplier API TODO
         Optional<Boolean> currentAvailabilityOpt = supplierApiService.checkProductAvailability(item.getProduct());
 
         if (currentAvailabilityOpt.isEmpty()) {
@@ -126,12 +126,15 @@ public class ProductAvailabilityMonitoringService {
 
         boolean currentAvailability = true;
         Boolean lastAvailability = false;
+        // boolean currentAvailability = currentAvailabilityOpt.get();
+        // Boolean lastAvailability = item.getLastAvailabilityStatus();
 
         // Update last check timestamp
         item.setLastAvailabilityCheck(ZonedDateTime.now());
 
         // Check if availability has changed
         boolean availabilityChanged = true;
+        // boolean availabilityChanged = lastAvailability == null || !lastAvailability.equals(currentAvailability);
 
         if (availabilityChanged) {
             LOG.info("Availability changed for product: {} (item: {}) - {} -> {}",
@@ -169,7 +172,8 @@ public class ProductAvailabilityMonitoringService {
         LOG.debug("Processing watchlist item: {} for product: {}", item.getId(), item.getProduct().getName());
 
         // Check current availability from supplier API
-        Optional<Boolean> currentAvailabilityOpt = supplierApiService.checkProductAvailability(item.getProduct());
+        Optional<Boolean> currentAvailabilityOpt = Optional.of(true);
+        // Optional<Boolean> currentAvailabilityOpt = supplierApiService.checkProductAvailability(item.getProduct());
 
         if (currentAvailabilityOpt.isEmpty()) {
             LOG.warn("Could not determine availability for product: {} (item: {})",
@@ -178,6 +182,7 @@ public class ProductAvailabilityMonitoringService {
         }
 
         boolean currentAvailability = true;
+        //
         Boolean lastAvailability = false;
 
         // Update last check timestamp
