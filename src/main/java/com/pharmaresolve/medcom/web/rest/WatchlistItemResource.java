@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -47,6 +48,7 @@ public class WatchlistItemResource {
      * Add a new item to a pharmacy's watchlist.
      */
     @PostMapping("")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<WatchlistItemDTO> addItemToWatchlist(@PathVariable Long pharmacyId, @Valid @RequestBody WatchlistItemDTO watchlistItemDTO) throws URISyntaxException {
         LOG.debug("REST request to add WatchlistItem to pharmacy {} : {}", pharmacyId, watchlistItemDTO);
 
@@ -71,6 +73,7 @@ public class WatchlistItemResource {
      * Update an existing watchlist item.
      */
     @PutMapping("/{itemId}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<WatchlistItemDTO> updateItemInWatchlist(@PathVariable Long pharmacyId, @PathVariable Long itemId, @Valid @RequestBody WatchlistItemDTO watchlistItemDTO) {
         LOG.debug("REST request to update WatchlistItem {} in pharmacy {} : {}", itemId, pharmacyId, watchlistItemDTO);
 
@@ -95,6 +98,7 @@ public class WatchlistItemResource {
      * Remove an item from a pharmacy's watchlist.
      */
     @DeleteMapping("/{itemId}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Void> removeItemFromWatchlist(@PathVariable Long pharmacyId, @PathVariable Long itemId) {
         LOG.debug("REST request to remove WatchlistItem {} from pharmacy {}", itemId, pharmacyId);
 
@@ -110,6 +114,7 @@ public class WatchlistItemResource {
      * Get all watchlist items for a pharmacy (paged).
      */
     @GetMapping("")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<WatchlistItemDTO>> getWatchlistItems(@PathVariable Long pharmacyId, @ParameterObject Pageable pageable) {
         LOG.debug("REST request to get WatchlistItems for pharmacy {}", pharmacyId);
 
@@ -123,6 +128,7 @@ public class WatchlistItemResource {
      * Get a watchlist item by ID for a pharmacy.
      */
     @GetMapping("/{itemId}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<WatchlistItemDTO> getWatchlistItem(@PathVariable Long pharmacyId, @PathVariable Long itemId) {
         LOG.debug("REST request to get WatchlistItem {} from pharmacy {}", itemId, pharmacyId);
 

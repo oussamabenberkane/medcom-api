@@ -55,6 +55,9 @@ public class Notification implements Serializable {
     @Column(name = "recipient_name")
     private String recipientName;
 
+    @Column(name = "read_at")
+    private ZonedDateTime readAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "watchlistItem" }, allowSetters = true)
     private Alert alert;
@@ -191,6 +194,19 @@ public class Notification implements Serializable {
         this.recipientName = recipientName;
     }
 
+    public ZonedDateTime getReadAt() {
+        return this.readAt;
+    }
+
+    public Notification readAt(ZonedDateTime readAt) {
+        this.setReadAt(readAt);
+        return this;
+    }
+
+    public void setReadAt(ZonedDateTime readAt) {
+        this.readAt = readAt;
+    }
+
     public Alert getAlert() {
         return this.alert;
     }
@@ -237,6 +253,7 @@ public class Notification implements Serializable {
             ", errorMessage='" + getErrorMessage() + "'" +
             ", recipientEmail='" + getRecipientEmail() + "'" +
             ", recipientName='" + getRecipientName() + "'" +
+            ", readAt='" + getReadAt() + "'" +
             "}";
     }
 }

@@ -27,7 +27,7 @@ public class ProductAvailabilitySchedulerService {
     /**
      * Monitor priority 1 items every minute.
      */
-    @Scheduled(cron = "0 */1 * * * *")
+    //@Scheduled(cron = "0 */1 * * * *")
     @Async
     public void monitorPriority1Items() {
         LOG.debug("Starting scheduled monitoring for priority 1 items (every minute)");
@@ -41,7 +41,7 @@ public class ProductAvailabilitySchedulerService {
     /**
      * Monitor priority 2 items every 30 minutes.
      */
-    @Scheduled(cron = "0 */30 * * * *")
+    //@Scheduled(cron = "0 */30 * * * *")
     @Async
     public void monitorPriority2Items() {
         LOG.debug("Starting scheduled monitoring for priority 2 items (every 30 minutes)");
@@ -55,7 +55,7 @@ public class ProductAvailabilitySchedulerService {
     /**
      * Monitor priority 3 items every hour.
      */
-    @Scheduled(cron = "0 0 */1 * * *")
+    //@Scheduled(cron = "0 0 */1 * * *")
     @Async
     public void monitorPriority3Items() {
         LOG.debug("Starting scheduled monitoring for priority 3 items (every hour)");

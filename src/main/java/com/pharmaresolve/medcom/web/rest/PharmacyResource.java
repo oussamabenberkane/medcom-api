@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -52,6 +53,7 @@ public class PharmacyResource {
      * Create a new pharmacy with its watchlist.
      */
     @PostMapping("")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PharmacyDTO> createPharmacy(@RequestBody PharmacyDTO pharmacyDTO) throws URISyntaxException {
         LOG.debug("REST request to save Pharmacy : {}", pharmacyDTO);
 
@@ -70,6 +72,7 @@ public class PharmacyResource {
      * Update an existing pharmacy by ID.
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<PharmacyDTO> updatePharmacy(@PathVariable("id") Long id, @RequestBody PharmacyDTO pharmacyDTO) throws URISyntaxException {
         LOG.debug("REST request to update Pharmacy : {}, {}", id, pharmacyDTO);
 
@@ -91,6 +94,7 @@ public class PharmacyResource {
      * Get all pharmacies with pagination, or filter by watchlist null.
      */
     @GetMapping("")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<PharmacyDTO>> getAllPharmacies(@ParameterObject Pageable pageable, @RequestParam(name = "filter", required = false) String filter) {
         LOG.debug("REST request to get a page of Pharmacies");
         Page<PharmacyDTO> page = pharmacyService.findAll(pageable);
@@ -102,6 +106,7 @@ public class PharmacyResource {
      * Get a single pharmacy by ID.
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<PharmacyDTO> getPharmacy(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Pharmacy : {}", id);
         Optional<PharmacyDTO> pharmacyDTO = pharmacyService.findOne(id);
@@ -116,6 +121,7 @@ public class PharmacyResource {
      * @return processing results including number of items processed and alerts created
      */
     @PostMapping("/{pharmacyId}/trigger-availability-check")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<TriggerAvailabilityCheckResponse> triggerAvailabilityCheck(@PathVariable("pharmacyId") Long pharmacyId) {
         LOG.debug("REST request to trigger availability check for pharmacy: {}", pharmacyId);
 
@@ -153,6 +159,7 @@ public class PharmacyResource {
      * Delete a pharmacy by ID.
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletePharmacy(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Pharmacy : {}", id);
         pharmacyService.delete(id);

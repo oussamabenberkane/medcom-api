@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -41,7 +42,7 @@ public class WatchlistResource {
 
     private final AlertService alertService;
 
-    public WatchlistResource(WatchlistService watchlistService, WatchlistRepository watchlistRepository, AlertService alertService) {
+    public WatchlistResource(WatchlistService watchlistService, AlertService alertService) {
         this.watchlistService = watchlistService;
         this.alertService = alertService;
     }
@@ -50,6 +51,7 @@ public class WatchlistResource {
      * Update the watchlist for a pharmacy.
      */
     @PutMapping("/{pharmacyId}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<WatchlistDTO> updateWatchlistForPharmacy(@PathVariable Long pharmacyId, @RequestBody WatchlistDTO watchlistDTO) {
         LOG.debug("REST request to update Watchlist for pharmacy {} : {}", pharmacyId, watchlistDTO);
 
@@ -69,6 +71,7 @@ public class WatchlistResource {
      * Get all watchlists (paged).
      */
     @GetMapping("")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<WatchlistDTO>> getAllWatchlists(@ParameterObject Pageable pageable) {
         LOG.debug("REST request to get a page of Watchlists");
         Page<WatchlistDTO> page = watchlistService.findAll(pageable);
@@ -80,6 +83,7 @@ public class WatchlistResource {
      * Get a watchlist by ID.
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<WatchlistDTO> getWatchlist(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Watchlist : {}", id);
         Optional<WatchlistDTO> watchlistDTO = watchlistService.findOne(id);
@@ -90,6 +94,7 @@ public class WatchlistResource {
      * Get all alerts for a watchlist.
      */
     @GetMapping("/{watchlistId}/alerts")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<AlertDTO>> getWatchlistAlerts(
         @PathVariable("watchlistId") Long watchlistId,
         @ParameterObject Pageable pageable

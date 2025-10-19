@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -53,6 +54,7 @@ public class AlertResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<AlertDTO> createAlert(@RequestBody AlertDTO alertDTO) throws URISyntaxException {
         LOG.debug("REST request to save Alert : {}", alertDTO);
         if (alertDTO.getId() != null) {
@@ -75,6 +77,7 @@ public class AlertResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<AlertDTO> updateAlert(
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody AlertDTO alertDTO
@@ -104,6 +107,7 @@ public class AlertResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of alerts in body.
      */
     @GetMapping("")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<AlertDTO>> getAllAlerts(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get a page of Alerts");
         Page<AlertDTO> page = alertService.findAll(pageable);
@@ -118,6 +122,7 @@ public class AlertResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the alertDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<AlertDTO> getAlert(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Alert : {}", id);
         Optional<AlertDTO> alertDTO = alertService.findOne(id);
@@ -131,6 +136,7 @@ public class AlertResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Void> deleteAlert(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Alert : {}", id);
         alertService.delete(id);

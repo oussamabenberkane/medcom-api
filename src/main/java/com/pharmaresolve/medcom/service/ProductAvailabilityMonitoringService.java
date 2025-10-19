@@ -107,61 +107,6 @@ public class ProductAvailabilityMonitoringService {
     }
 
     /**
-     * Process a single watchlist item for availability changes.
-     *
-     * @param item the watchlist item to process
-     * @return true if an alert was created, false otherwise
-     */
-    private boolean processWatchlistItem(WatchlistItem item) {
-        LOG.debug("Processing watchlist item: {} for product: {}", item.getId(), item.getProduct().getName());
-
-        // Check current availability from supplier API TODO
-        Optional<Boolean> currentAvailabilityOpt = supplierApiService.checkProductAvailability(item.getProduct());
-
-        if (currentAvailabilityOpt.isEmpty()) {
-            LOG.warn("Could not determine availability for product: {} (item: {})",
-                item.getProduct().getName(), item.getId());
-            //return false;
-        }
-
-        boolean currentAvailability = true;
-        Boolean lastAvailability = false;
-        // boolean currentAvailability = currentAvailabilityOpt.get();
-        // Boolean lastAvailability = item.getLastAvailabilityStatus();
-
-        // Update last check timestamp
-        item.setLastAvailabilityCheck(ZonedDateTime.now());
-
-        // Check if availability has changed
-        boolean availabilityChanged = true;
-        // boolean availabilityChanged = lastAvailability == null || !lastAvailability.equals(currentAvailability);
-
-        if (availabilityChanged) {
-            LOG.info("Availability changed for product: {} (item: {}) - {} -> {}",
-                item.getProduct().getName(), item.getId(), lastAvailability, currentAvailability);
-
-            // Update stored availability status
-            item.setLastAvailabilityStatus(currentAvailability);
-            watchlistItemRepository.save(item);
-
-            // Create alert for availability change
-            AlertDTO alert = alertService.createProductAvailabilityAlert(item, currentAvailability);
-            LOG.debug("Created alert: {} for availability change", alert.getId());
-
-            // Create notifications for pharmacy users
-            Alert alertEntity = alertService.findByAlertId(alert.getId()).orElseThrow();
-            notificationService.createEmailNotificationsForAlert(alertEntity);
-
-            return true;
-        } else {
-            LOG.debug("No availability change for product: {} (item: {})", item.getProduct().getName(), item.getId());
-            // Still update the item to record the check timestamp
-            watchlistItemRepository.save(item);
-            return false;
-        }
-    }
-
-    /**
      * Process watchlist item availability check without immediately sending notifications.
      * Returns the created Alert entity for later consolidated processing.
      *
@@ -189,7 +134,7 @@ public class ProductAvailabilityMonitoringService {
         item.setLastAvailabilityCheck(ZonedDateTime.now());
 
         // Check if availability has changed
-        boolean availabilityChanged = true;
+        boolean availabilityChanged = false;
 
         if (availabilityChanged) {
             LOG.info("Availability changed for product: {} (item: {}) - {} -> {}",

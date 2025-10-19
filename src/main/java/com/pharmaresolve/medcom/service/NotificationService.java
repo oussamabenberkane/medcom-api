@@ -9,7 +9,9 @@ import com.pharmaresolve.medcom.domain.enumeration.NotificationStatus;
 import com.pharmaresolve.medcom.repository.NotificationRepository;
 import com.pharmaresolve.medcom.repository.UserRepository;
 import com.pharmaresolve.medcom.service.dto.NotificationDTO;
+import com.pharmaresolve.medcom.service.dto.NotificationHistoryDTO;
 import com.pharmaresolve.medcom.service.mapper.NotificationMapper;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -249,5 +251,135 @@ public class NotificationService {
     public Optional<Notification> findByMailjetMessageId(String mailjetMessageId) {
         LOG.debug("Request to find Notification by MailJet message ID : {}", mailjetMessageId);
         return Optional.ofNullable(notificationRepository.findByMailjetMessageId(mailjetMessageId));
+    }
+
+    /**
+     * Get notification history for a user with optional filtering.
+     *
+     * @param userEmail the user's email
+     * @param status optional status filter
+     * @param type optional type filter
+     * @param pageable pagination information
+     * @return page of notification history DTOs
+     */
+    @Transactional(readOnly = true)
+    public Page<NotificationHistoryDTO> getNotificationHistoryForUser(
+        String userEmail,
+        NotificationStatus status,
+        NotificationType type,
+        Pageable pageable
+    ) {
+        LOG.debug("Request to get notification history for user: {} with filters - status: {}, type: {}",
+            userEmail, status, type);
+
+        Page<Notification> notifications = notificationRepository.findByRecipientEmailWithFilters(
+            userEmail, status, type, pageable
+        );
+
+        return notifications.map(this::convertToHistoryDTO);
+    }
+
+    /**
+     * Get notification history for a user for a specific watchlist item with optional filtering.
+     *
+     * @param userEmail the user's email
+     * @param watchlistItemId the watchlist item ID
+     * @param status optional status filter
+     * @param type optional type filter
+     * @param pageable pagination information
+     * @return page of notification history DTOs
+     */
+    @Transactional(readOnly = true)
+    public Page<NotificationHistoryDTO> getNotificationHistoryForUserAndItem(
+        String userEmail,
+        Long watchlistItemId,
+        NotificationStatus status,
+        NotificationType type,
+        Pageable pageable
+    ) {
+        LOG.debug("Request to get notification history for user: {} and watchlist item: {} with filters - status: {}, type: {}",
+            userEmail, watchlistItemId, status, type);
+
+        Page<Notification> notifications = notificationRepository.findByRecipientEmailAndWatchlistItemWithFilters(
+            userEmail, watchlistItemId, status, type, pageable
+        );
+
+        return notifications.map(this::convertToHistoryDTO);
+    }
+
+    /**
+     * Mark a notification as read.
+     *
+     * @param notificationId the notification ID
+     * @param userEmail the user's email (for authorization)
+     * @return the updated notification DTO
+     */
+    public Optional<NotificationDTO> markAsRead(Long notificationId, String userEmail) {
+        LOG.debug("Request to mark notification {} as read for user: {}", notificationId, userEmail);
+
+        Optional<Notification> notificationOpt = notificationRepository.findByIdAndRecipientEmail(notificationId, userEmail);
+
+        if (notificationOpt.isEmpty()) {
+            LOG.warn("Notification {} not found or user {} does not have access", notificationId, userEmail);
+            return Optional.empty();
+        }
+
+        Notification notification = notificationOpt.get();
+
+        if (notification.getReadAt() != null) {
+            LOG.debug("Notification {} is already marked as read at {}", notificationId, notification.getReadAt());
+            return Optional.of(notificationMapper.toDto(notification));
+        }
+
+        notification.setReadAt(ZonedDateTime.now());
+        notification = notificationRepository.save(notification);
+
+        LOG.info("Notification {} marked as read for user {}", notificationId, userEmail);
+
+        return Optional.of(notificationMapper.toDto(notification));
+    }
+
+    /**
+     * Convert a Notification entity to NotificationHistoryDTO with alert and product information.
+     *
+     * @param notification the notification entity
+     * @return the notification history DTO
+     */
+    private NotificationHistoryDTO convertToHistoryDTO(Notification notification) {
+        NotificationHistoryDTO dto = new NotificationHistoryDTO();
+
+        // Basic notification fields
+        dto.setId(notification.getId());
+        dto.setType(notification.getType());
+        dto.setContent(notification.getContent());
+        dto.setSentAt(notification.getSentAt());
+        dto.setDeliveredAt(notification.getDeliveredAt());
+        dto.setStatus(notification.getStatus());
+        dto.setErrorMessage(notification.getErrorMessage());
+        dto.setRecipientEmail(notification.getRecipientEmail());
+        dto.setRecipientName(notification.getRecipientName());
+        dto.setReadAt(notification.getReadAt());
+
+        // Alert information (may be null for consolidated notifications)
+        Alert alert = notification.getAlert();
+        if (alert != null) {
+            dto.setAlertId(alert.getId());
+            dto.setAlertMessage(alert.getMessage());
+            dto.setAlertCreated(alert.getCreated());
+
+            // Product information from watchlist item
+            if (alert.getWatchlistItem() != null) {
+                dto.setWatchlistItemId(alert.getWatchlistItem().getId());
+                dto.setAvailabilityStatus(alert.getWatchlistItem().getLastAvailabilityStatus());
+                dto.setPriority(alert.getWatchlistItem().getPriority());
+
+                if (alert.getWatchlistItem().getProduct() != null) {
+                    dto.setProductId(alert.getWatchlistItem().getProduct().getId());
+                    dto.setProductName(alert.getWatchlistItem().getProduct().getName());
+                }
+            }
+        }
+
+        return dto;
     }
 }
