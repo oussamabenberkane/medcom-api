@@ -1,6 +1,16 @@
 {
   "permissions": {
-    "allow": ["WebSearch", "Bash(git add:*)", "Bash(./mvnw:*)", "Bash(mkdir:*)", "Bash(npx jhipster:*)", "Bash(timeout /t 60 /nobreak)"],
+    "allow": [
+      "WebSearch",
+      "Bash(git add:*)",
+      "Bash(./mvnw:*)",
+      "Bash(mkdir:*)",
+      "Bash(npx jhipster:*)",
+      "Bash(timeout /t 60 /nobreak)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill //F //PID 15696)"
+    ],
     "deny": [],
     "ask": []
   }
