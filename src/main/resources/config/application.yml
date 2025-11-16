@@ -62,7 +62,7 @@ management:
       enabled: true
   health:
     mail:
-      enabled: true # Mail health check enabled for MailJet SMTP
+      enabled: false # When using the MailService, configure an SMTP server and set this to true
   prometheus:
     metrics:
       export:
@@ -95,9 +95,9 @@ spring:
     name: medcomApi
   docker:
     compose:
-      enabled: false
+      enabled: true
       lifecycle-management: start-only
-      file: src/docker-compose.yml
+      file: src/main/docker/services.yml
   profiles:
     # The commented value for `active` can be replaced with valid Spring profiles to load.
     # Otherwise, it will be filled in by maven when building the JAR file
@@ -194,16 +194,16 @@ info:
 jhipster:
   clientApp:
     name: 'medcomApiApp'
-  # CORS enabled to accept all origins
-  cors:
-    allowed-origin-patterns: "*"
-    allowed-methods: "*"
-    allowed-headers: "*"
-    exposed-headers: "Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params"
-    allow-credentials: true
-    max-age: 1800
+  # By default CORS is disabled. Uncomment to enable.
+  # cors:
+  #   allowed-origins: "http://localhost:8100,http://localhost:9000"
+  #   allowed-methods: "*"
+  #   allowed-headers: "*"
+  #   exposed-headers: "Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params"
+  #   allow-credentials: true
+  #   max-age: 1800
   mail:
-    from: oussamabenberkane.pro@gmail.com
+    from: medcomApi@localhost
   api-docs:
     default-include-pattern: /api/**
     management-include-pattern: /management/**
@@ -229,4 +229,15 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+application:
+  # Supplier API configuration
+  supplier-api:
+    base-url: http://localhost:9000/api
+    enabled: false
+  # Availability monitoring configuration
+  availability-monitoring:
+    enabled: true
+    interval-ms: 60000 # Check every minute (60000 ms)
+  # Watchlist configuration
+  watchlist:
+    max-items: 10 # Maximum items per pharmacy watchlist

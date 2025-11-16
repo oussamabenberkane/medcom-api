@@ -1,179 +1,112 @@
-<!doctype html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="en">
   <head>
-    <title>Product Availability Updates</title>
+    <title th:text="#{email.consolidatedAlert.title}">Multiple Product Availability Alerts</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link rel="icon" th:href="@{|${baseUrl}/favicon.ico|}" />
+    <link rel="shortcut icon" href="../../static/images/favicon.ico" th:href="@{|${baseUrl}/favicon.ico|}" />
     <style>
       body {
-        font-family: Arial, sans-serif;
-        line-height: 1.6;
-        color: #333;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         margin: 0;
         padding: 20px;
+        background-color: #f4f4f4;
       }
       .container {
-        max-width: 700px;
+        max-width: 600px;
         margin: 0 auto;
-        background: #f9f9f9;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      }
-      .header {
-        background: #007bff;
-        color: white;
-        padding: 20px;
-        text-align: center;
-        border-radius: 5px 5px 0 0;
-        margin: -30px -30px 20px -30px;
-      }
-      .summary-box {
-        background: #e9ecef;
-        padding: 20px;
-        border-radius: 5px;
-        margin: 20px 0;
-        text-align: center;
-      }
-      .summary-count {
-        font-size: 2em;
-        font-weight: bold;
-        color: #007bff;
-      }
-      .products-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 20px 0;
-        background: white;
-        border-radius: 5px;
+        background-color: #ffffff;
+        border-radius: 8px;
         overflow: hidden;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       }
-      .products-table th {
-        background: #007bff;
-        color: white;
-        padding: 12px;
-        text-align: left;
-        font-weight: bold;
+      .header {
+        background-color: #007bff;
+        color: #ffffff;
+        padding: 20px;
+        text-align: center;
       }
-      .products-table td {
-        padding: 12px;
-        border-bottom: 1px solid #eee;
+      .content {
+        padding: 30px;
       }
-      .products-table tr:last-child td {
-        border-bottom: none;
+      .product-list {
+        margin: 20px 0;
       }
-      .status-available {
-        color: #28a745;
-        font-weight: bold;
-      }
-      .status-unavailable {
-        color: #dc3545;
-        font-weight: bold;
-      }
-      .priority-badge {
-        display: inline-block;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 0.8em;
-        font-weight: bold;
-        color: white;
-      }
-      .priority-1 { background: #dc3545; }
-      .priority-2 { background: #fd7e14; }
-      .priority-3 { background: #ffc107; color: #333; }
-      .pharmacy-info {
-        background: #e9ecef;
+      .product-item {
+        background-color: #f8f9fa;
+        border-left: 4px solid #007bff;
         padding: 15px;
-        border-radius: 5px;
+        margin-bottom: 15px;
+      }
+      .product-name {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .status {
+        font-weight: bold;
+        margin: 5px 0;
+      }
+      .status.available {
+        color: #28a745;
+      }
+      .status.unavailable {
+        color: #dc3545;
+      }
+      .product-code {
+        color: #6c757d;
+        font-size: 14px;
+      }
+      .summary {
+        background-color: #e9ecef;
+        padding: 15px;
+        border-radius: 4px;
         margin: 20px 0;
       }
       .footer {
+        background-color: #f8f9fa;
+        padding: 20px;
         text-align: center;
-        margin-top: 30px;
-        font-size: 0.9em;
-        color: #666;
+        color: #6c757d;
+        font-size: 12px;
       }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <h1>Product Availability Updates</h1>
-        <p>MedCom - Pharmacy Product Monitoring</p>
+        <h1>Watchlist Alert Summary</h1>
       </div>
+      <div class="content">
+        <p>Hello <span th:text="${user.firstName}">User</span>,</p>
 
-      <p th:text="|Dear ${userName},|">Dear User,</p>
+        <div class="summary">
+          <p><strong>Availability changes detected for <span th:text="${products.size()}">0</span> product(s) on your watchlist.</strong></p>
+        </div>
 
-      <div class="summary-box">
-        <div class="summary-count" th:text="${alertCount}">5</div>
-        <p><strong>Products have changed availability status</strong></p>
-        <p>Here's a summary of all the changes detected in this monitoring cycle:</p>
-      </div>
+        <div class="product-list">
+          <div th:each="product : ${products}" class="product-item">
+            <div class="product-name" th:text="${product.name}">Product Name</div>
+            <div class="status" th:classappend="${product.available} ? 'available' : 'unavailable'">
+              <span th:if="${product.available}">✓ Now Available</span>
+              <span th:unless="${product.available}">✗ Currently Unavailable</span>
+            </div>
+            <div class="product-code">Code: <span th:text="${product.code}">CODE123</span></div>
+            <div th:if="${product.officialUrl}">
+              <a th:href="${product.officialUrl}" target="_blank" style="color: #007bff; text-decoration: none;">View Details →</a>
+            </div>
+          </div>
+        </div>
 
-      <div class="products-table-container">
-        <table class="products-table">
-          <thead>
-            <tr>
-              <th>Product Name</th>
-              <th>Status</th>
-              <th>Priority</th>
-              <th>Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="product : ${products}">
-              <td>
-                <strong th:text="${product.name}">Product Name</strong>
-                <br>
-                <small th:text="${product.atcCode}" style="color: #666;">ATC Code</small>
-              </td>
-              <td>
-                <span th:if="${product.isAvailable}" class="status-available">✓ Available</span>
-                <span th:if="${!product.isAvailable}" class="status-unavailable">✗ Unavailable</span>
-              </td>
-              <td>
-                <span class="priority-badge" th:classappend="|priority-${product.priority}|" th:text="|Priority ${product.priority}|">Priority 1</span>
-              </td>
-              <td>
-                <span th:text="${#temporals.format(product.created, 'HH:mm')}">12:30</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <p>These alerts were generated because these products are on your pharmacy's watchlist.</p>
 
-      <div class="pharmacy-info">
-        <h4>Pharmacy Information:</h4>
-        <p><strong>Pharmacy:</strong> <span th:text="${pharmacy.name}">Pharmacy Name</span></p>
-        <p th:if="${pharmacy.address}">
-          <strong>Address:</strong> <span th:text="${pharmacy.address}">Address</span>
-        </p>
-        <p th:if="${pharmacy.email}">
-          <strong>Email:</strong> <span th:text="${pharmacy.email}">Email</span>
-        </p>
-        <p th:if="${pharmacy.phone}">
-          <strong>Phone:</strong> <span th:text="${pharmacy.phone}">Phone</span>
+        <p>
+          Best regards,<br/>
+          <em>MedCom Monitoring System</em>
         </p>
       </div>
-
-      <p>
-        <strong>Next Steps:</strong><br/>
-        • Log into your MedCom dashboard to view more details<br/>
-        • Contact your suppliers for products that are now available<br/>
-        • Update your watchlist settings if needed<br/>
-        • Review priority settings for products that changed frequently
-      </p>
-
       <div class="footer">
-        <p>
-          This is an automated consolidated notification from the MedCom system.<br/>
-          Please do not reply to this email.
-        </p>
-        <p>
-          <em>MedCom - Pharmacy Product Monitoring System</em><br/>
-          <small>Generated on <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}">Current Date/Time</span></small>
-        </p>
+        <p>This is an automated notification from your pharmacy product monitoring system.</p>
+        <p>Pharmacy: <span th:text="${pharmacyName}">Pharmacy Name</span></p>
       </div>
     </div>
   </body>

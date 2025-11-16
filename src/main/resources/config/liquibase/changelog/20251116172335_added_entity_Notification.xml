@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity Notification.
+    -->
+    <changeSet id="20251116172335-1" author="jhipster">
+        <createTable tableName="notification">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_at" type="${datetimeType}">
+                <constraints nullable="false" />
+            </column>
+            <column name="notification_type" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="message" type="varchar(1000)">
+                <constraints nullable="true" />
+            </column>
+            <column name="email_sent" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="email_sent_at" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="email_delivered" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="email_delivered_at" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="email_failed" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="email_failed_at" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="email_failure_reason" type="varchar(500)">
+                <constraints nullable="true" />
+            </column>
+            <column name="mailjet_message_id" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="read_at" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="watchlist_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="pharmacy_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="watchlist_item_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
+        </createTable>
+        <dropDefaultValue tableName="notification" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="notification" columnName="email_sent_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="notification" columnName="email_delivered_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="notification" columnName="email_failed_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="notification" columnName="read_at" columnDataType="${datetimeType}"/>
+    </changeSet>
+
+    <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
+
+    <!--
+        Load sample data generated with Faker.js
+        - This data can be easily edited using a CSV editor (or even MS Excel) and
+          is located in the 'src/main/resources/config/liquibase/fake-data' directory
+        - By default this data is applied when running with the JHipster 'dev' profile.
+          This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
+          Spring Boot configuration key.
+    -->
+    <changeSet id="20251116172335-1-data" author="jhipster" context="faker">
+        <loadData
+                  file="config/liquibase/fake-data/notification.csv"
+                  separator=";"
+                  tableName="notification"
+                  usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="created_at" type="date"/>
+            <column name="notification_type" type="string"/>
+            <column name="message" type="string"/>
+            <column name="email_sent" type="boolean"/>
+            <column name="email_sent_at" type="date"/>
+            <column name="email_delivered" type="boolean"/>
+            <column name="email_delivered_at" type="date"/>
+            <column name="email_failed" type="boolean"/>
+            <column name="email_failed_at" type="date"/>
+            <column name="email_failure_reason" type="string"/>
+            <column name="mailjet_message_id" type="string"/>
+            <column name="read_at" type="date"/>
+            <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
+        </loadData>
+    </changeSet>
+</databaseChangeLog>

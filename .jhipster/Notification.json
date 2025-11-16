@@ -1,40 +1,98 @@
 {
   "annotations": {
-    "changelogDate": "20250830210138"
+    "changelogDate": "20251116172335"
   },
+  "applications": "*",
   "dto": "mapstruct",
   "fields": [
     {
-      "fieldName": "type",
+      "fieldName": "createdAt",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "notificationType",
       "fieldType": "NotificationType",
-      "fieldValues": "PUSH,EMAIL,SMS,WHATSAPP"
+      "fieldValidateRules": ["required"],
+      "fieldValues": "AVAILABILITY_CHANGE,PRODUCT_ADDED,WATCHLIST_UPDATE"
     },
     {
-      "fieldName": "content",
-      "fieldType": "String"
+      "fieldName": "message",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "1000"
     },
     {
-      "fieldName": "sentAt",
-      "fieldType": "ZonedDateTime"
+      "fieldName": "emailSent",
+      "fieldType": "Boolean"
     },
     {
-      "fieldName": "deliveredAt",
-      "fieldType": "ZonedDateTime"
+      "fieldName": "emailSentAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "emailDelivered",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "emailDeliveredAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "emailFailed",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "emailFailedAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "emailFailureReason",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "500"
+    },
+    {
+      "fieldName": "mailjetMessageId",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "fieldName": "readAt",
+      "fieldType": "Instant"
     }
   ],
-  "jpaMetamodelFiltering": false,
+  "jpaMetamodelFiltering": true,
   "name": "Notification",
   "pagination": "pagination",
-  "readOnly": false,
   "relationships": [
     {
-      "otherEntityField": "id",
-      "otherEntityName": "alert",
-      "relationshipName": "alert",
+      "otherEntityName": "watchlist",
+      "relationshipName": "watchlist",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityName": "user",
+      "relationshipName": "user",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipWithBuiltInEntity": true
+    },
+    {
+      "otherEntityName": "pharmacy",
+      "relationshipName": "pharmacy",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityName": "watchlistItem",
+      "relationshipName": "watchlistItem",
       "relationshipSide": "left",
       "relationshipType": "many-to-one"
     }
   ],
   "searchEngine": "no",
-  "service": "serviceClass"
+  "service": "serviceImpl"
 }

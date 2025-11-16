@@ -6,21 +6,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="00000000000000" author="oussama">
-        <createSequence sequenceName="sequence_generator" startValue="1050" incrementBy="1"/>
-        <createSequence sequenceName="user_sequence" startValue="1" incrementBy="1"/>
-        <createSequence sequenceName="pharmacy_sequence" startValue="1" incrementBy="1"/>
-        <createSequence sequenceName="product_sequence" startValue="1" incrementBy="1"/>
-        <createSequence sequenceName="watchlist_item_sequence" startValue="1" incrementBy="1"/>
-        <createSequence sequenceName="alert_sequence" startValue="1" incrementBy="1"/>
-        <createSequence sequenceName="notification_sequence" startValue="1" incrementBy="1"/>
+    <changeSet id="00000000000000" author="jhipster">
+        <createSequence sequenceName="sequence_generator" startValue="1050" incrementBy="50"/>
     </changeSet>
 
     <!--
         JHipster core tables.
         The initial schema has the '00000000000001' id, so that it is over-written if we re-generate it.
     -->
-    <changeSet id="00000000000001" author="oussama">
+    <changeSet id="00000000000001" author="jhipster">
         <createTable tableName="jhi_user">
             <column name="id" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
@@ -110,7 +104,7 @@
         <dropDefaultValue tableName="jhi_user" columnName="created_date" columnDataType="${datetimeType}"/>
     </changeSet>
 
-    <changeSet author="oussama" id="00000000000002" context="test">
+    <changeSet author="jhipster" id="00000000000002" context="test">
         <createTable tableName="jhi_date_time_wrapper">
             <column  name="id" type="BIGINT">
                 <constraints primaryKey="true" primaryKeyName="jhi_date_time_wrapperPK"/>

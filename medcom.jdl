@@ -1,0 +1,81 @@
+// MedCom Pharmacy Product Monitoring System
+// Entity definitions for JHipster
+
+entity Pharmacy {
+  name String required maxlength(100)
+  address String maxlength(255)
+  email String required pattern(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)
+  phone String maxlength(20)
+  website String maxlength(255)
+  active Boolean required
+  activatedBy String maxlength(50)
+  deactivatedBy String maxlength(50)
+  deleted Boolean
+  deletedBy String maxlength(50)
+}
+
+entity Product {
+  name String required maxlength(255)
+  code String required unique maxlength(100) // Unique identifier for API calls
+  officialUrl String maxlength(500)
+  createdBy String maxlength(50)
+  updatedBy String maxlength(50)
+}
+
+entity Watchlist {
+  createdAt Instant
+  createdBy String maxlength(50)
+}
+
+entity WatchlistItem {
+  dateAdded Instant required
+  addedBy String maxlength(50)
+  dateUpdated Instant
+  updatedBy String maxlength(50)
+  lastAvailabilityStatus Boolean
+  lastAvailabilityChange ZonedDateTime
+}
+
+entity Notification {
+  createdAt Instant required
+  notificationType NotificationType required
+  message String maxlength(1000)
+  emailSent Boolean
+  emailSentAt Instant
+  emailDelivered Boolean
+  emailDeliveredAt Instant
+  emailFailed Boolean
+  emailFailedAt Instant
+  emailFailureReason String maxlength(500)
+  mailjetMessageId String maxlength(255)
+  readAt Instant
+}
+
+enum NotificationType {
+  AVAILABILITY_CHANGE,
+  PRODUCT_ADDED,
+  WATCHLIST_UPDATE
+}
+
+// Relationships
+relationship OneToOne {
+  Watchlist{pharmacy required} to Pharmacy
+}
+
+relationship ManyToOne {
+  WatchlistItem{watchlist required} to Watchlist
+  WatchlistItem{product required} to Product
+  Notification{watchlist} to Watchlist
+  Notification{user} to User with builtInEntity
+  Notification{pharmacy} to Pharmacy
+  Notification{watchlistItem} to WatchlistItem
+}
+
+// Service layer with DTOs
+service all with serviceImpl
+dto * with mapstruct
+paginate Notification, WatchlistItem with pagination
+paginate Product, Pharmacy with pagination
+
+// Enable filtering
+filter Product, Pharmacy, Notification, WatchlistItem

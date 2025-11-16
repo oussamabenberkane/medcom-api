@@ -12,21 +12,16 @@
     <property name="timeType" value="time(6)" dbms="postgresql"/>
 
     <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250823221452_added_entity_Pharmacy.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250823222213_added_entity_Product.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250830202617_added_entity_Watchlist.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250830203457_added_entity_WatchlistItem.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250830205412_added_entity_Alert.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250830210138_added_entity_Notification.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927132213_add_phase1_enhancements.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927153622_add_availability_monitoring_fields.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927171030_add_notification_status_tracking.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250928163000_add_notification_read_at.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251116172331_added_entity_Pharmacy.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251116172332_added_entity_Product.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251116172333_added_entity_Watchlist.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251116172334_added_entity_WatchlistItem.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251116172335_added_entity_Notification.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
-    <include file="config/liquibase/changelog/20250830202617_added_entity_constraints_Watchlist.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250830203457_added_entity_constraints_WatchlistItem.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250830205412_added_entity_constraints_Alert.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250830210138_added_entity_constraints_Notification.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251116172333_added_entity_constraints_Watchlist.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251116172334_added_entity_constraints_WatchlistItem.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251116172335_added_entity_constraints_Notification.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251116172336_add_user_pharmacy_relationship.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

@@ -1,54 +1,45 @@
 {
   "annotations": {
-    "changelogDate": "20250823222213"
+    "changelogDate": "20251116172332"
   },
+  "applications": "*",
   "dto": "mapstruct",
   "fields": [
     {
       "fieldName": "name",
       "fieldType": "String",
-      "fieldValidateRules": ["required"]
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "255"
     },
     {
-      "fieldName": "uniqueId",
+      "fieldName": "code",
       "fieldType": "String",
-      "fieldValidateRules": ["unique"]
-    },
-    {
-      "fieldName": "atcCode",
-      "fieldType": "String"
+      "fieldValidateRules": ["required", "unique", "maxlength"],
+      "fieldValidateRulesMaxlength": "100"
     },
     {
       "fieldName": "officialUrl",
-      "fieldType": "String"
-    },
-    {
-      "fieldName": "active",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "fieldName": "created",
-      "fieldType": "ZonedDateTime"
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "500"
     },
     {
       "fieldName": "createdBy",
-      "fieldType": "String"
-    },
-    {
-      "fieldName": "updated",
-      "fieldType": "ZonedDateTime"
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
     },
     {
       "fieldName": "updatedBy",
-      "fieldType": "String"
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
     }
   ],
-  "jpaMetamodelFiltering": false,
+  "jpaMetamodelFiltering": true,
   "name": "Product",
   "pagination": "pagination",
-  "readOnly": false,
   "relationships": [],
   "searchEngine": "no",
-  "service": "serviceClass"
+  "service": "serviceImpl"
 }

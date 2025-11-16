@@ -17,7 +17,7 @@ logging:
   level:
     ROOT: INFO
     tech.jhipster: INFO
-    com.pharmaresolve.medcom: INFO
+    com.oussamabenberkane.medcom: INFO
 
 management:
   prometheus:
@@ -43,17 +43,10 @@ spring:
   liquibase:
     contexts: prod
   mail:
-    host: in-v3.mailjet.com
-    port: 587
-    username: 882157472f08d8fdffb37ab6e23d137c
-    password: 8ee0c5a33b00d9cf11f7ee6f88aee644
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
+    host: localhost
+    port: 25
+    username:
+    password:
   thymeleaf:
     cache: true
 
@@ -106,7 +99,7 @@ jhipster:
         # - In the Consul configserver
         # - In a separate `application-prod.yml` file, in the same folder as your executable JAR file
         # - In the `JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET` environment variable
-        base64-secret: YzkyZDQzZjhkMWNlNTQ3ZWY0ODY2Mzc4ZTNhYzBmZWE1OTJkMDI1MGNmYjVhZDZlODQ1ZTQwYWU4OTIwODllZmFiZjQ3ZjFhMGMxZWZmMWUyMGI4ODVlMTcyMWU3MDIzY2VhM2I0MGZkNzdkYjVlNGIyNjVkZmUyZDc3NTMxN2U=
+        base64-secret: NzM0ZTEzMjk4MDA2ZTE3ODI1MWFmNzk1ODY4YjEyMWQ2MzE2MDM3ZTRjODFjYmNlN2JkZjgwMTUyOGUxNDJiOTFjMzdmMDdjZGYwMDJlYjEyMzFiMDVmOTcxNzE4YzVmNDNhMTUxYmQyYjk4ZDEzNjMzOTQ2OTc0ODI2YjNlY2U=
         # Token is valid 24 hours
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000

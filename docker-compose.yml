@@ -5,10 +5,10 @@ services:
     restart: unless-stopped
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_DB=medcom-dev-db
+      - POSTGRES_DB=dev-db
       - POSTGRES_PASSWORD=postgres
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - medcom_postgres_data:/var/lib/postgresql/data
     networks:

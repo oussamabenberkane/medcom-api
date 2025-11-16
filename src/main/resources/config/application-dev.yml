@@ -18,7 +18,7 @@ logging:
     ROOT: DEBUG
     tech.jhipster: DEBUG
     org.hibernate.SQL: DEBUG
-    com.pharmaresolve.medcom: DEBUG
+    com.oussamabenberkane.medcom: DEBUG
 
 spring:
   devtools:
@@ -32,20 +32,23 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://localhost:5432/medcom-dev-db
+    url: jdbc:postgresql://localhost:5432/dev-db
     username: postgres
     password: postgres
     hikari:
       poolName: Hikari
       auto-commit: false
+  docker:
+    compose:
+      enabled: false # Disable Docker Compose lifecycle management - database started manually
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
-    contexts: dev, prod
+    contexts: dev, faker
   mail:
     host: in-v3.mailjet.com
     port: 587
-    username: 882157472f08d8fdffb37ab6e23d137c
-    password: 8ee0c5a33b00d9cf11f7ee6f88aee644
+    username: ${MAILJET_API_KEY:your-mailjet-api-key}
+    password: ${MAILJET_SECRET_KEY:your-mailjet-secret-key}
     properties:
       mail:
         smtp:
@@ -76,9 +79,12 @@ jhipster:
       backup-count: 1
   # CORS is only enabled by default with the "dev" profile
   cors:
-    allowed-origin-patterns: "*"
-    allowed-methods: "*"
-    allowed-headers: "*"
+    # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
+    allowed-origins: 'http://localhost:8100,https://localhost:8100'
+    # Enable CORS when running in GitHub Codespaces
+    allowed-origin-patterns: 'https://*.githubpreview.dev'
+    allowed-methods: '*'
+    allowed-headers: '*'
     exposed-headers: 'Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params'
     allow-credentials: true
     max-age: 1800
@@ -86,7 +92,7 @@ jhipster:
     authentication:
       jwt:
         # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
-        base64-secret: YzkyZDQzZjhkMWNlNTQ3ZWY0ODY2Mzc4ZTNhYzBmZWE1OTJkMDI1MGNmYjVhZDZlODQ1ZTQwYWU4OTIwODllZmFiZjQ3ZjFhMGMxZWZmMWUyMGI4ODVlMTcyMWU3MDIzY2VhM2I0MGZkNzdkYjVlNGIyNjVkZmUyZDc3NTMxN2U=
+        base64-secret: NzM0ZTEzMjk4MDA2ZTE3ODI1MWFmNzk1ODY4YjEyMWQ2MzE2MDM3ZTRjODFjYmNlN2JkZjgwMTUyOGUxNDJiOTFjMzdmMDdjZGYwMDJlYjEyMzFiMDVmOTcxNzE4YzVmNDNhMTUxYmQyYjk4ZDEzNjMzOTQ2OTc0ODI2YjNlY2U=
         # Token is valid 24 hours
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000

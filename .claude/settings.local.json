@@ -1,10 +1,6 @@
 {
   "permissions": {
-    "allow": [
-      "WebSearch",
-      "Bash(git add:*)",
-      "Bash(./mvnw:*)"
-    ],
+    "allow": ["WebSearch", "Bash(git add:*)", "Bash(./mvnw:*)", "Bash(mkdir:*)", "Bash(npx jhipster:*)", "Bash(timeout /t 60 /nobreak)"],
     "deny": [],
     "ask": []
   }

@@ -1,46 +1,59 @@
 {
   "annotations": {
-    "changelogDate": "20250830203457"
+    "changelogDate": "20251116172334"
   },
+  "applications": "*",
   "dto": "mapstruct",
   "fields": [
     {
       "fieldName": "dateAdded",
-      "fieldType": "ZonedDateTime"
-    },
-    {
-      "fieldName": "priority",
-      "fieldType": "Integer"
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
     },
     {
       "fieldName": "addedBy",
-      "fieldType": "String"
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
     },
     {
-      "fieldName": "alertEnabled",
+      "fieldName": "dateUpdated",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "updatedBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "lastAvailabilityStatus",
       "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "lastAvailabilityChange",
+      "fieldType": "ZonedDateTime"
     }
   ],
-  "jpaMetamodelFiltering": false,
+  "jpaMetamodelFiltering": true,
   "name": "WatchlistItem",
   "pagination": "pagination",
-  "readOnly": false,
   "relationships": [
     {
-      "otherEntityField": "id",
       "otherEntityName": "watchlist",
       "relationshipName": "watchlist",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     },
     {
-      "otherEntityField": "id",
       "otherEntityName": "product",
       "relationshipName": "product",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     }
   ],
   "searchEngine": "no",
-  "service": "serviceClass"
+  "service": "serviceImpl"
 }
